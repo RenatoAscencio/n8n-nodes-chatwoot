@@ -5,6 +5,8 @@ import { getAllOperation } from './getAll.operation';
 import { updateOperation } from './update.operation';
 import { deleteOperation } from './delete.operation';
 import { searchOperation } from './search.operation';
+import { getConversationsOperation } from './getConversations.operation';
+import { mergeOperation } from './merge.operation';
 
 export const contactOperations: INodeProperties = {
   displayName: 'Operation',
@@ -36,10 +38,22 @@ export const contactOperations: INodeProperties = {
       action: 'Get a contact',
     },
     {
+      name: 'Get Conversations',
+      value: 'getConversations',
+      description: 'Get all conversations for a contact',
+      action: 'Get contact conversations',
+    },
+    {
       name: 'Get Many',
       value: 'getAll',
       description: 'Get many contacts',
       action: 'Get many contacts',
+    },
+    {
+      name: 'Merge',
+      value: 'merge',
+      description: 'Merge two contacts into one',
+      action: 'Merge contacts',
     },
     {
       name: 'Search',
@@ -64,4 +78,6 @@ export const contactFields: INodeProperties[] = [
   ...updateOperation,
   ...deleteOperation,
   ...searchOperation,
+  ...getConversationsOperation,
+  ...mergeOperation,
 ];

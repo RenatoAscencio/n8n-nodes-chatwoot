@@ -4,6 +4,7 @@ import type {
   IHookFunctions,
   IHttpRequestMethods,
   ILoadOptionsFunctions,
+  INodePropertyOptions,
   IRequestOptions,
   JsonObject,
 } from 'n8n-workflow';
@@ -245,4 +246,111 @@ export function validateId(value: unknown, fieldName: string): number {
     throw new Error(`${fieldName} must be a positive integer`);
   }
   return num;
+}
+
+// ============================================================================
+// LoadOptions Methods
+// ============================================================================
+
+/**
+ * Load agents for dropdown selection
+ */
+export async function getAgents(
+  this: ILoadOptionsFunctions,
+): Promise<INodePropertyOptions[]> {
+  const returnData: INodePropertyOptions[] = [];
+
+  try {
+    const agents = (await chatwootApiRequest.call(this, 'GET', '/agents')) as IDataObject[];
+
+    for (const agent of agents) {
+      returnData.push({
+        name: `${agent.name} (${agent.email})`,
+        value: agent.id as number,
+      });
+    }
+  } catch {
+    // Return empty array on error, don't break the UI
+  }
+
+  return returnData;
+}
+
+/**
+ * Load teams for dropdown selection
+ */
+export async function getTeams(
+  this: ILoadOptionsFunctions,
+): Promise<INodePropertyOptions[]> {
+  const returnData: INodePropertyOptions[] = [];
+
+  try {
+    const teams = (await chatwootApiRequest.call(this, 'GET', '/teams')) as IDataObject[];
+
+    for (const team of teams) {
+      returnData.push({
+        name: team.name as string,
+        value: team.id as number,
+      });
+    }
+  } catch {
+    // Return empty array on error, don't break the UI
+  }
+
+  return returnData;
+}
+
+/**
+ * Load inboxes for dropdown selection
+ */
+export async function getInboxes(
+  this: ILoadOptionsFunctions,
+): Promise<INodePropertyOptions[]> {
+  const returnData: INodePropertyOptions[] = [];
+
+  try {
+    const response = (await chatwootApiRequest.call(this, 'GET', '/inboxes')) as IDataObject;
+    const inboxes = (response.payload || response) as IDataObject[];
+
+    if (Array.isArray(inboxes)) {
+      for (const inbox of inboxes) {
+        const channelType = inbox.channel_type as string;
+        returnData.push({
+          name: `${inbox.name} (${channelType})`,
+          value: inbox.id as number,
+        });
+      }
+    }
+  } catch {
+    // Return empty array on error, don't break the UI
+  }
+
+  return returnData;
+}
+
+/**
+ * Load labels for dropdown selection
+ */
+export async function getLabels(
+  this: ILoadOptionsFunctions,
+): Promise<INodePropertyOptions[]> {
+  const returnData: INodePropertyOptions[] = [];
+
+  try {
+    const response = (await chatwootApiRequest.call(this, 'GET', '/labels')) as IDataObject;
+    const labels = (response.payload || response) as IDataObject[];
+
+    if (Array.isArray(labels)) {
+      for (const label of labels) {
+        returnData.push({
+          name: label.title as string,
+          value: label.title as string, // Chatwoot uses label titles, not IDs
+        });
+      }
+    }
+  } catch {
+    // Return empty array on error, don't break the UI
+  }
+
+  return returnData;
 }

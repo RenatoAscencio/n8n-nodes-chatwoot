@@ -1,0 +1,22 @@
+{
+	"node": "n8n-nodes-base.chatwootTrigger",
+	"nodeVersion": "1.0",
+	"codexVersion": "1.0",
+	"categories": ["Communication"],
+	"resources": {
+		"credentialDocumentation": [
+			{
+				"url": "https://www.chatwoot.com/docs/product/others/configure-chatwoot-with-n8n"
+			}
+		],
+		"primaryDocumentation": [
+			{
+				"url": "https://www.chatwoot.com/hc/user-guide/articles/1684764-api-access"
+			}
+		]
+	},
+	"alias": ["chat", "webhook", "event", "customer support", "live chat"],
+	"subcategories": {
+		"Communication": ["Live Chat"]
+	}
+}
