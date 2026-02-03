@@ -1,0 +1,85 @@
+{
+  "name": "Chatwoot - Send Message to Conversation",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "start-node",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "create",
+        "conversationId": 1,
+        "content": "Hello! This is an automated message from n8n.",
+        "options": {
+          "message_type": "outgoing",
+          "private": false
+        }
+      },
+      "id": "chatwoot-send",
+      "name": "Send Message",
+      "type": "n8n-nodes-chatwoot.chatwoot",
+      "typeVersion": 1,
+      "position": [450, 300],
+      "credentials": {
+        "chatwootApi": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Chatwoot API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "conversation",
+        "operation": "updateStatus",
+        "conversationId": 1,
+        "status": "pending"
+      },
+      "id": "chatwoot-status",
+      "name": "Set Status to Pending",
+      "type": "n8n-nodes-chatwoot.chatwoot",
+      "typeVersion": 1,
+      "position": [650, 300],
+      "credentials": {
+        "chatwootApi": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Chatwoot API"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Send Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Message": {
+      "main": [
+        [
+          {
+            "node": "Set Status to Pending",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "saveDataSuccessExecution": "all",
+    "saveDataErrorExecution": "all"
+  },
+  "staticData": null,
+  "tags": []
+}
