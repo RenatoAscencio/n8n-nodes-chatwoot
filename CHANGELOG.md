@@ -5,6 +5,128 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-02-03
+
+### Added
+
+This is a **major expansion release** that brings the node to feature parity with ~130+ operations across Application, Platform, and Public APIs. Total resources increased from 15 to 27.
+
+#### New Credentials
+
+- **ChatwootPlatformApi** - Platform API token for managing accounts, users, and agent bots at the platform level
+- **ChatwootPublicApi** - Public API authentication using inbox identifier for widget/client-side operations
+
+#### New Application API Resources
+
+- **Profile Resource** - NEW
+  - Fetch: Get the authenticated user's profile
+
+- **Help Center Resource** - NEW
+  - Create Portal: Create a new help center portal
+  - Get Portal: Retrieve portal details by slug
+  - Update Portal: Modify portal settings
+  - Create Category: Add a category to a portal
+  - Create Article: Add an article to a portal
+
+- **Integration Resource** - NEW
+  - Get Many: List all integrations
+  - Create Hook: Create an integration hook (Dialogflow, Slack, etc.)
+  - Update Hook: Modify hook settings
+  - Delete Hook: Remove an integration hook
+
+- **Audit Log Resource** - NEW
+  - Get Many: Retrieve account audit logs
+
+- **CSAT Survey Resource** - NEW
+  - Get: Get CSAT survey for a conversation
+
+#### New Platform API Resources (requires ChatwootPlatformApi credential)
+
+- **Platform Account Resource** - NEW
+  - Create: Create a new account
+  - Get: Retrieve account details
+  - Update: Modify account settings
+  - Delete: Remove an account
+
+- **Platform User Resource** - NEW
+  - Create: Create a new platform user
+  - Get: Retrieve user details
+  - Update: Modify user settings
+  - Delete: Remove a user
+  - Get SSO URL: Generate SSO login URL
+
+- **Account User Resource** - NEW
+  - Get Many: List all users in an account
+  - Create: Add a user to an account
+  - Delete: Remove a user from an account
+
+- **Account Agent Bot Resource** - NEW
+  - Get Many: List all account agent bots
+  - Get: Retrieve an agent bot by ID
+  - Create: Create a new account agent bot
+  - Update: Modify agent bot settings
+  - Delete: Remove an account agent bot
+
+#### New Public API Resources (requires ChatwootPublicApi credential)
+
+- **Public Contact Resource** - NEW
+  - Create: Create a contact via public API
+  - Get: Retrieve contact details
+  - Update: Update contact information
+
+- **Public Conversation Resource** - NEW
+  - Create: Create a conversation via public API
+  - Get: Retrieve a conversation
+  - Get Many: List all conversations for a contact
+  - Resolve: Resolve/toggle conversation status
+  - Toggle Typing: Show typing indicator
+  - Update Last Seen: Mark messages as seen
+
+- **Public Message Resource** - NEW
+  - Create: Send a message via public API
+  - Get Many: List messages in a conversation
+  - Update: Update a message
+
+### Enhanced
+
+- **Contact Resource**
+  - Filter: Filter contacts with advanced criteria
+  - Add Labels: Add labels to a contact
+  - List Labels: Get all labels for a contact
+
+- **Conversation Resource**
+  - Update: Update conversation (custom attributes, team, etc.)
+  - Filter: Filter conversations with advanced criteria
+  - Update Custom Attributes: Set custom attributes on conversation
+  - List Labels: Get all labels for a conversation
+  - Get Meta: Get conversation metadata
+
+- **Message Resource**
+  - Update: Update an existing message
+
+- **Team Resource**
+  - Add Agent: Add an agent to a team
+  - Delete Agent: Remove an agent from a team
+  - Get Members: List team members
+  - Update Agents: Update team agent memberships
+
+- **Inbox Resource**
+  - Create: Create a new inbox
+  - Add Agent: Add an agent to an inbox
+  - Delete Agent: Remove an agent from an inbox
+  - Get Members: List inbox members
+  - Get Agent Bot: Get associated agent bot
+  - Set Agent Bot: Associate an agent bot with inbox
+
+### Technical
+
+- Multi-API architecture supporting Application, Platform, and Public APIs
+- Conditional credential selection based on resource type
+- Enhanced GenericFunctions for handling different API authentication patterns
+- 27 total resources with 130+ operations
+
+---
+
 ## [0.3.0] - 2026-02-03
 
 ### Added

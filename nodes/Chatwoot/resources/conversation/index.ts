@@ -6,6 +6,11 @@ import { assignOperation } from './assign.operation';
 import { addLabelsOperation } from './addLabels.operation';
 import { createOperation } from './create.operation';
 import { togglePriorityOperation } from './togglePriority.operation';
+import { updateOperation } from './update.operation';
+import { filterOperation } from './filter.operation';
+import { updateCustomAttributesOperation } from './updateCustomAttributes.operation';
+import { listLabelsOperation } from './listLabels.operation';
+import { getMetaOperation } from './getMeta.operation';
 
 export const conversationOperations: INodeProperties = {
   displayName: 'Operation',
@@ -37,6 +42,12 @@ export const conversationOperations: INodeProperties = {
       action: 'Create a conversation',
     },
     {
+      name: 'Filter',
+      value: 'filter',
+      description: 'Filter conversations using advanced criteria',
+      action: 'Filter conversations',
+    },
+    {
       name: 'Get',
       value: 'get',
       description: 'Get a conversation by ID',
@@ -49,10 +60,34 @@ export const conversationOperations: INodeProperties = {
       action: 'Get many conversations',
     },
     {
+      name: 'Get Meta',
+      value: 'getMeta',
+      description: 'Get conversation metadata and counts',
+      action: 'Get conversation metadata',
+    },
+    {
+      name: 'List Labels',
+      value: 'listLabels',
+      description: 'Get all labels for a conversation',
+      action: 'List conversation labels',
+    },
+    {
       name: 'Toggle Priority',
       value: 'togglePriority',
       description: 'Set conversation priority (urgent, high, medium, low, none)',
       action: 'Toggle conversation priority',
+    },
+    {
+      name: 'Update',
+      value: 'update',
+      description: 'Update conversation details',
+      action: 'Update a conversation',
+    },
+    {
+      name: 'Update Custom Attributes',
+      value: 'updateCustomAttributes',
+      description: 'Update conversation custom attributes',
+      action: 'Update conversation custom attributes',
     },
     {
       name: 'Update Status',
@@ -72,4 +107,9 @@ export const conversationFields: INodeProperties[] = [
   ...addLabelsOperation,
   ...createOperation,
   ...togglePriorityOperation,
+  ...updateOperation,
+  ...filterOperation,
+  ...updateCustomAttributesOperation,
+  ...listLabelsOperation,
+  ...getMetaOperation,
 ];

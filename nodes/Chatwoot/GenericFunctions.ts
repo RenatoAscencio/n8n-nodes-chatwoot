@@ -10,6 +10,22 @@ import type {
 } from 'n8n-workflow';
 import { NodeApiError } from 'n8n-workflow';
 
+// ============================================================================
+// Types
+// ============================================================================
+
+export type ApiType = 'application' | 'platform' | 'public';
+
+export interface ApiRequestOptions {
+  apiType?: ApiType;
+  inboxIdentifier?: string;
+  contactIdentifier?: string;
+}
+
+// ============================================================================
+// Utilities
+// ============================================================================
+
 /**
  * Normalize base URL by removing trailing slashes and whitespace
  */
@@ -36,8 +52,12 @@ function getErrorMessage(statusCode: number, defaultMessage: string): string {
   return errorMessages[statusCode] || defaultMessage;
 }
 
+// ============================================================================
+// Application API (Account-level operations)
+// ============================================================================
+
 /**
- * Make an authenticated request to the Chatwoot API
+ * Make an authenticated request to the Chatwoot Application API
  */
 export async function chatwootApiRequest(
   this: IExecuteFunctions | ILoadOptionsFunctions | IHookFunctions,
@@ -90,6 +110,127 @@ export async function chatwootApiRequest(
     });
   }
 }
+
+// ============================================================================
+// Platform API (Super Admin operations)
+// ============================================================================
+
+/**
+ * Make an authenticated request to the Chatwoot Platform API
+ * Platform API is used for super admin operations (creating accounts, users, etc.)
+ */
+export async function chatwootPlatformApiRequest(
+  this: IExecuteFunctions | ILoadOptionsFunctions | IHookFunctions,
+  method: IHttpRequestMethods,
+  endpoint: string,
+  body: IDataObject = {},
+  qs: IDataObject = {},
+): Promise<IDataObject | IDataObject[]> {
+  const credentials = await this.getCredentials('chatwootPlatformApi');
+
+  const baseUrl = normalizeBaseUrl(credentials.baseUrl as string);
+
+  const options: IRequestOptions = {
+    method,
+    uri: `${baseUrl}/platform/api/v1${endpoint}`,
+    headers: {
+      api_access_token: credentials.apiAccessToken as string,
+      'Content-Type': 'application/json',
+    },
+    qs,
+    body,
+    json: true,
+  };
+
+  // Remove empty body for GET/DELETE requests
+  if (method === 'GET' || method === 'DELETE' || Object.keys(body).length === 0) {
+    delete options.body;
+  }
+
+  // Remove empty query string parameters
+  if (Object.keys(qs).length === 0) {
+    delete options.qs;
+  }
+
+  try {
+    const response = await this.helpers.request(options);
+    return response as IDataObject | IDataObject[];
+  } catch (error) {
+    const statusCode = (error as JsonObject).statusCode as number;
+    const message = getErrorMessage(
+      statusCode,
+      (error as Error).message || 'An unexpected error occurred',
+    );
+
+    throw new NodeApiError(this.getNode(), error as JsonObject, {
+      message,
+      description: `Platform API: Failed to ${method} ${endpoint}`,
+      httpCode: statusCode?.toString(),
+    });
+  }
+}
+
+// ============================================================================
+// Public API (Client/Widget operations)
+// ============================================================================
+
+/**
+ * Make a request to the Chatwoot Public API
+ * Public API is used for client-facing operations (website widgets, etc.)
+ */
+export async function chatwootPublicApiRequest(
+  this: IExecuteFunctions | ILoadOptionsFunctions | IHookFunctions,
+  method: IHttpRequestMethods,
+  endpoint: string,
+  body: IDataObject = {},
+  qs: IDataObject = {},
+): Promise<IDataObject | IDataObject[]> {
+  const credentials = await this.getCredentials('chatwootPublicApi');
+
+  const baseUrl = normalizeBaseUrl(credentials.baseUrl as string);
+
+  const options: IRequestOptions = {
+    method,
+    uri: `${baseUrl}/public/api/v1${endpoint}`,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    qs,
+    body,
+    json: true,
+  };
+
+  // Remove empty body for GET/DELETE requests
+  if (method === 'GET' || method === 'DELETE' || Object.keys(body).length === 0) {
+    delete options.body;
+  }
+
+  // Remove empty query string parameters
+  if (Object.keys(qs).length === 0) {
+    delete options.qs;
+  }
+
+  try {
+    const response = await this.helpers.request(options);
+    return response as IDataObject | IDataObject[];
+  } catch (error) {
+    const statusCode = (error as JsonObject).statusCode as number;
+    const message = getErrorMessage(
+      statusCode,
+      (error as Error).message || 'An unexpected error occurred',
+    );
+
+    throw new NodeApiError(this.getNode(), error as JsonObject, {
+      message,
+      description: `Public API: Failed to ${method} ${endpoint}`,
+      httpCode: statusCode?.toString(),
+    });
+  }
+}
+
+// ============================================================================
+// Pagination Helpers
+// ============================================================================
 
 /**
  * Handle page-based pagination for list endpoints
@@ -147,6 +288,51 @@ export async function chatwootApiRequestAllItems(
 
     // Safety limit to prevent infinite loops
     if (page > 100) {
+      break;
+    }
+  } while (items.length > 0);
+
+  return returnData;
+}
+
+/**
+ * Handle page-based pagination for Platform API endpoints
+ */
+export async function chatwootPlatformApiRequestAllItems(
+  this: IExecuteFunctions | ILoadOptionsFunctions,
+  method: IHttpRequestMethods,
+  endpoint: string,
+  body: IDataObject = {},
+  qs: IDataObject = {},
+  propertyName = 'payload',
+): Promise<IDataObject[]> {
+  const returnData: IDataObject[] = [];
+  let page = 1;
+  const perPage = 25;
+
+  qs.page = page;
+
+  let responseData: IDataObject;
+  let items: IDataObject[];
+
+  do {
+    qs.page = page;
+    responseData = (await chatwootPlatformApiRequest.call(this, method, endpoint, body, qs)) as IDataObject;
+
+    if (responseData[propertyName] && Array.isArray(responseData[propertyName])) {
+      items = responseData[propertyName] as IDataObject[];
+    } else if (responseData.data && Array.isArray(responseData.data)) {
+      items = responseData.data as IDataObject[];
+    } else if (Array.isArray(responseData)) {
+      items = responseData;
+    } else {
+      items = [];
+    }
+
+    returnData.push(...items);
+    page++;
+
+    if (items.length < perPage || page > 100) {
       break;
     }
   } while (items.length > 0);
@@ -222,6 +408,10 @@ export async function chatwootApiRequestAllMessages(
   return returnData;
 }
 
+// ============================================================================
+// Validation Utilities
+// ============================================================================
+
 /**
  * Simplify the response by extracting only essential fields
  */
@@ -246,6 +436,16 @@ export function validateId(value: unknown, fieldName: string): number {
     throw new Error(`${fieldName} must be a positive integer`);
   }
   return num;
+}
+
+/**
+ * Validate that a string is not empty
+ */
+export function validateString(value: unknown, fieldName: string): string {
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    throw new Error(`${fieldName} must be a non-empty string`);
+  }
+  return value.trim();
 }
 
 // ============================================================================
@@ -350,6 +550,102 @@ export async function getLabels(
     }
   } catch {
     // Return empty array on error, don't break the UI
+  }
+
+  return returnData;
+}
+
+/**
+ * Load portals for dropdown selection (Help Center)
+ */
+export async function getPortals(
+  this: ILoadOptionsFunctions,
+): Promise<INodePropertyOptions[]> {
+  const returnData: INodePropertyOptions[] = [];
+
+  try {
+    const response = (await chatwootApiRequest.call(this, 'GET', '/portals')) as IDataObject;
+    const portals = (response.payload || response) as IDataObject[];
+
+    if (Array.isArray(portals)) {
+      for (const portal of portals) {
+        returnData.push({
+          name: portal.name as string,
+          value: portal.slug as string,
+        });
+      }
+    }
+  } catch {
+    // Return empty array on error
+  }
+
+  return returnData;
+}
+
+/**
+ * Load categories for dropdown selection (Help Center)
+ */
+export async function getCategories(
+  this: ILoadOptionsFunctions,
+): Promise<INodePropertyOptions[]> {
+  const returnData: INodePropertyOptions[] = [];
+
+  try {
+    // This would need the portal slug to work, so we return empty for now
+    // In practice, categories are loaded dynamically based on selected portal
+  } catch {
+    // Return empty array on error
+  }
+
+  return returnData;
+}
+
+/**
+ * Load agent bots for dropdown selection
+ */
+export async function getAgentBots(
+  this: ILoadOptionsFunctions,
+): Promise<INodePropertyOptions[]> {
+  const returnData: INodePropertyOptions[] = [];
+
+  try {
+    const agentBots = (await chatwootApiRequest.call(this, 'GET', '/agent_bots')) as IDataObject[];
+
+    for (const bot of agentBots) {
+      returnData.push({
+        name: bot.name as string,
+        value: bot.id as number,
+      });
+    }
+  } catch {
+    // Return empty array on error
+  }
+
+  return returnData;
+}
+
+/**
+ * Load integrations for dropdown selection
+ */
+export async function getIntegrations(
+  this: ILoadOptionsFunctions,
+): Promise<INodePropertyOptions[]> {
+  const returnData: INodePropertyOptions[] = [];
+
+  try {
+    const response = (await chatwootApiRequest.call(this, 'GET', '/integrations/apps')) as IDataObject;
+    const integrations = (response.payload || response) as IDataObject[];
+
+    if (Array.isArray(integrations)) {
+      for (const integration of integrations) {
+        returnData.push({
+          name: integration.name as string,
+          value: integration.id as string,
+        });
+      }
+    }
+  } catch {
+    // Return empty array on error
   }
 
   return returnData;
