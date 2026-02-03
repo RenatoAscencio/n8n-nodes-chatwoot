@@ -1,6 +1,9 @@
 {
-  "name": "n8n-nodes-chatwoot",
-  "version": "0.1.0",
+  "name": "@renatoascencio/n8n-nodes-chatwoot",
+  "version": "0.1.1",
+  "publishConfig": {
+    "access": "public"
+  },
   "description": "n8n community node for Chatwoot - customer engagement platform for managing conversations, messages, and contacts",
   "keywords": [
     "n8n-community-node-package",

@@ -5,11 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.1.0] - 2024-01-XX
+## [0.1.1] - 2025-02-03
+
+### Changed
+
+- Renamed package to `@renatoascencio/n8n-nodes-chatwoot` (original name was already taken on npm)
+- Added `publishConfig` for scoped public package
+
+## [0.1.0] - 2025-02-03
 
 ### Added
 
-- Initial release of n8n-nodes-chatwoot
+- Initial release of @renatoascencio/n8n-nodes-chatwoot
 - **Conversation Resource**
   - Get: Retrieve a single conversation by ID
   - Get Many: List conversations with filters (status, inbox, team, labels, search query, assignee type)

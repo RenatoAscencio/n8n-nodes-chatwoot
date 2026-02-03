@@ -18,7 +18,7 @@ This is an n8n community node for [Chatwoot](https://www.chatwoot.com/), the ope
 
 1. Go to **Settings > Community Nodes** in your n8n instance
 2. Select **Install**
-3. Enter `n8n-nodes-chatwoot` in the input field
+3. Enter `@renatoascencio/n8n-nodes-chatwoot` in the input field
 4. Agree to the risks and select **Install**
 
 ### Manual Installation
@@ -27,7 +27,7 @@ To install this node manually in a self-hosted n8n instance:
 
 ```bash
 cd ~/.n8n/nodes
-npm install n8n-nodes-chatwoot
+npm install @renatoascencio/n8n-nodes-chatwoot
 ```
 
 Then restart n8n.
@@ -49,7 +49,7 @@ npm run build
 npm link
 
 # In your n8n installation directory
-npm link n8n-nodes-chatwoot
+npm link @renatoascencio/n8n-nodes-chatwoot
 ```
 
 ## Configuration
