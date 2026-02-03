@@ -1,6 +1,6 @@
 {
   "name": "@renatoascencio/n8n-nodes-chatwoot",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "publishConfig": {
     "access": "public"
   },
@@ -35,7 +35,7 @@
   "scripts": {
     "build": "tsc && npm run copy:icons",
     "build:watch": "tsc --watch",
-    "copy:icons": "cp nodes/Chatwoot/*.svg dist/nodes/Chatwoot/ 2>/dev/null || true",
+    "copy:icons": "cp nodes/Chatwoot/*.svg nodes/Chatwoot/*.node.json dist/nodes/Chatwoot/ 2>/dev/null || true",
     "dev": "npm run build:watch",
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
@@ -56,7 +56,8 @@
       "dist/credentials/ChatwootApi.credentials.js"
     ],
     "nodes": [
-      "dist/nodes/Chatwoot/Chatwoot.node.js"
+      "dist/nodes/Chatwoot/Chatwoot.node.js",
+      "dist/nodes/Chatwoot/ChatwootTrigger.node.js"
     ]
   },
   "devDependencies": {

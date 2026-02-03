@@ -2,6 +2,8 @@ import type { INodeProperties } from 'n8n-workflow';
 import { getOperation } from './get.operation';
 import { getAllOperation } from './getAll.operation';
 import { updateStatusOperation } from './updateStatus.operation';
+import { assignOperation } from './assign.operation';
+import { addLabelsOperation } from './addLabels.operation';
 
 export const conversationOperations: INodeProperties = {
   displayName: 'Operation',
@@ -14,6 +16,18 @@ export const conversationOperations: INodeProperties = {
     },
   },
   options: [
+    {
+      name: 'Add Labels',
+      value: 'addLabels',
+      description: 'Set labels on a conversation',
+      action: 'Add labels to a conversation',
+    },
+    {
+      name: 'Assign',
+      value: 'assign',
+      description: 'Assign conversation to an agent or team',
+      action: 'Assign a conversation',
+    },
     {
       name: 'Get',
       value: 'get',
@@ -40,4 +54,6 @@ export const conversationFields: INodeProperties[] = [
   ...getOperation,
   ...getAllOperation,
   ...updateStatusOperation,
+  ...assignOperation,
+  ...addLabelsOperation,
 ];
