@@ -506,6 +506,33 @@ export interface IContactMerge extends IDataObject {
 }
 
 // ============================================================================
+// Custom Filter Types
+// ============================================================================
+
+export type CustomFilterType = 'conversation' | 'contact' | 'report';
+
+export interface ICustomFilter extends IDataObject {
+  id: number;
+  name: string;
+  filter_type: CustomFilterType;
+  query: IDataObject;
+  account_id?: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface ICustomFilterCreate extends IDataObject {
+  name: string;
+  filter_type: CustomFilterType;
+  query: IDataObject;
+}
+
+export interface ICustomFilterUpdate extends IDataObject {
+  name?: string;
+  query?: IDataObject;
+}
+
+// ============================================================================
 // Report Types
 // ============================================================================
 

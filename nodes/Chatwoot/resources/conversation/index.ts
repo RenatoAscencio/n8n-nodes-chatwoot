@@ -4,6 +4,8 @@ import { getAllOperation } from './getAll.operation';
 import { updateStatusOperation } from './updateStatus.operation';
 import { assignOperation } from './assign.operation';
 import { addLabelsOperation } from './addLabels.operation';
+import { createOperation } from './create.operation';
+import { togglePriorityOperation } from './togglePriority.operation';
 
 export const conversationOperations: INodeProperties = {
   displayName: 'Operation',
@@ -29,6 +31,12 @@ export const conversationOperations: INodeProperties = {
       action: 'Assign a conversation',
     },
     {
+      name: 'Create',
+      value: 'create',
+      description: 'Create a new conversation',
+      action: 'Create a conversation',
+    },
+    {
       name: 'Get',
       value: 'get',
       description: 'Get a conversation by ID',
@@ -39,6 +47,12 @@ export const conversationOperations: INodeProperties = {
       value: 'getAll',
       description: 'Get many conversations with optional filters',
       action: 'Get many conversations',
+    },
+    {
+      name: 'Toggle Priority',
+      value: 'togglePriority',
+      description: 'Set conversation priority (urgent, high, medium, low, none)',
+      action: 'Toggle conversation priority',
     },
     {
       name: 'Update Status',
@@ -56,4 +70,6 @@ export const conversationFields: INodeProperties[] = [
   ...updateStatusOperation,
   ...assignOperation,
   ...addLabelsOperation,
+  ...createOperation,
+  ...togglePriorityOperation,
 ];

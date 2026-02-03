@@ -5,6 +5,54 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-02-03
+
+### Added
+
+This release adds 4 more resources and additional operations for existing resources, bringing the total to 15 resources with 55+ operations.
+
+- **Agent Bot Resource** - NEW
+  - Get Many: List all agent bots
+  - Get: Retrieve an agent bot by ID
+  - Create: Create a new agent bot
+  - Update: Modify agent bot settings
+  - Delete: Remove an agent bot
+
+- **Automation Rule Resource** - NEW
+  - Get Many: List all automation rules
+  - Get: Retrieve an automation rule by ID
+  - Create: Create a new automation rule with conditions and actions
+  - Update: Modify automation rule settings
+  - Delete: Remove an automation rule
+
+- **Custom Filter Resource** - NEW
+  - Get Many: List all custom filters (conversation, contact, report)
+  - Get: Retrieve a custom filter by ID
+  - Create: Create a new custom filter
+  - Update: Modify filter settings
+  - Delete: Remove a custom filter
+
+- **Report Resource** - NEW
+  - Account Summary: Get account-level report summary
+  - Agent Statistics: Get agent conversation metrics
+  - Conversation Counts: Get conversation counts by status
+  - Conversation Statistics: Get statistics grouped by agent, inbox, team, or channel
+
+### Enhanced
+
+- **Conversation Resource**
+  - Create: Create a new conversation
+  - Toggle Priority: Set conversation priority (urgent, high, medium, low, none)
+
+- **Message Resource**
+  - Delete: Delete a message from a conversation
+
+### Fixed
+
+- **Icon**: Updated to official Chatwoot logo from Simple Icons for better display in n8n
+
+---
+
 ## [0.2.0] - 2026-02-03
 
 ### Added

@@ -1,6 +1,7 @@
 import type { INodeProperties } from 'n8n-workflow';
 import { createOperation } from './create.operation';
 import { getAllOperation } from './getAll.operation';
+import { deleteOperation } from './delete.operation';
 
 export const messageOperations: INodeProperties = {
   displayName: 'Operation',
@@ -20,6 +21,12 @@ export const messageOperations: INodeProperties = {
       action: 'Send a message',
     },
     {
+      name: 'Delete',
+      value: 'delete',
+      description: 'Delete a message from a conversation',
+      action: 'Delete a message',
+    },
+    {
       name: 'Get Many',
       value: 'getAll',
       description: 'Get messages from a conversation',
@@ -29,4 +36,4 @@ export const messageOperations: INodeProperties = {
   default: 'create',
 };
 
-export const messageFields: INodeProperties[] = [...createOperation, ...getAllOperation];
+export const messageFields: INodeProperties[] = [...createOperation, ...getAllOperation, ...deleteOperation];
