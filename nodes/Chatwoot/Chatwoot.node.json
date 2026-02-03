@@ -1,0 +1,22 @@
+{
+  "node": "n8n-nodes-chatwoot.chatwoot",
+  "nodeVersion": "1.0",
+  "codexVersion": "1.0",
+  "categories": ["Communication", "Customer Success"],
+  "resources": {
+    "credentialDocumentation": [
+      {
+        "url": "https://www.chatwoot.com/developers/api/"
+      }
+    ],
+    "primaryDocumentation": [
+      {
+        "url": "https://www.chatwoot.com/docs/"
+      }
+    ]
+  },
+  "alias": ["chat", "support", "messaging", "helpdesk", "customer service", "live chat"],
+  "subcategories": {
+    "Communication": ["Live Chat"]
+  }
+}
