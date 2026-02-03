@@ -1,51 +1,43 @@
 import type { INodeProperties } from 'n8n-workflow';
 import { createOperation } from './create.operation';
 import { getAllOperation } from './getAll.operation';
-import { deleteOperation } from './delete.operation';
 import { updateOperation } from './update.operation';
 
-export const messageOperations: INodeProperties = {
+export const publicMessageOperations: INodeProperties = {
   displayName: 'Operation',
   name: 'operation',
   type: 'options',
   noDataExpression: true,
   displayOptions: {
     show: {
-      resource: ['message'],
+      resource: ['publicMessage'],
     },
   },
   options: [
     {
       name: 'Create',
       value: 'create',
-      description: 'Send a message to a conversation',
-      action: 'Send a message',
-    },
-    {
-      name: 'Delete',
-      value: 'delete',
-      description: 'Delete a message from a conversation',
-      action: 'Delete a message',
+      description: 'Send a message via public API',
+      action: 'Create public message',
     },
     {
       name: 'Get Many',
       value: 'getAll',
       description: 'Get messages from a conversation',
-      action: 'Get messages from conversation',
+      action: 'Get public messages',
     },
     {
       name: 'Update',
       value: 'update',
       description: 'Update a message',
-      action: 'Update a message',
+      action: 'Update public message',
     },
   ],
   default: 'create',
 };
 
-export const messageFields: INodeProperties[] = [
+export const publicMessageFields: INodeProperties[] = [
   ...createOperation,
   ...getAllOperation,
-  ...deleteOperation,
   ...updateOperation,
 ];

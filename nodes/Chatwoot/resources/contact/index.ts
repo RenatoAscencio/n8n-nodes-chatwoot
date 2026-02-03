@@ -7,6 +7,9 @@ import { deleteOperation } from './delete.operation';
 import { searchOperation } from './search.operation';
 import { getConversationsOperation } from './getConversations.operation';
 import { mergeOperation } from './merge.operation';
+import { filterOperation } from './filter.operation';
+import { addLabelsOperation } from './addLabels.operation';
+import { listLabelsOperation } from './listLabels.operation';
 
 export const contactOperations: INodeProperties = {
   displayName: 'Operation',
@@ -20,6 +23,12 @@ export const contactOperations: INodeProperties = {
   },
   options: [
     {
+      name: 'Add Labels',
+      value: 'addLabels',
+      description: 'Add labels to a contact',
+      action: 'Add labels to contact',
+    },
+    {
       name: 'Create',
       value: 'create',
       description: 'Create a new contact',
@@ -30,6 +39,12 @@ export const contactOperations: INodeProperties = {
       value: 'delete',
       description: 'Delete a contact',
       action: 'Delete a contact',
+    },
+    {
+      name: 'Filter',
+      value: 'filter',
+      description: 'Filter contacts using advanced criteria',
+      action: 'Filter contacts',
     },
     {
       name: 'Get',
@@ -48,6 +63,12 @@ export const contactOperations: INodeProperties = {
       value: 'getAll',
       description: 'Get many contacts',
       action: 'Get many contacts',
+    },
+    {
+      name: 'List Labels',
+      value: 'listLabels',
+      description: 'Get all labels for a contact',
+      action: 'List contact labels',
     },
     {
       name: 'Merge',
@@ -80,4 +101,7 @@ export const contactFields: INodeProperties[] = [
   ...searchOperation,
   ...getConversationsOperation,
   ...mergeOperation,
+  ...filterOperation,
+  ...addLabelsOperation,
+  ...listLabelsOperation,
 ];

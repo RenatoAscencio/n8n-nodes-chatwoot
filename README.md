@@ -17,12 +17,14 @@ A comprehensive n8n community node for [Chatwoot](https://www.chatwoot.com/) - t
 
 ## Highlights
 
-- **15 Resources** - Comprehensive coverage of the Chatwoot API
-- **55+ Operations** - Complete CRUD operations for all resources
+- **27 Resources** - Comprehensive coverage of Application, Platform, and Public APIs
+- **130+ Operations** - Complete CRUD operations for all resources
+- **3 API Types** - Application API, Platform API, and Public API support
 - **Trigger Node** - Real-time webhook events from Chatwoot
 - **Dynamic Dropdowns** - Auto-populated lists for agents, teams, inboxes, and labels
 - **Smart Pagination** - Automatic handling with "Return All" option
 - **Reports & Analytics** - Access conversation and agent statistics
+- **Help Center** - Manage portals, categories, and articles
 - **Detailed Error Messages** - Clear feedback for troubleshooting
 
 ---
@@ -81,7 +83,11 @@ docker restart n8n
 
 ## Configuration
 
-### Creating Credentials
+This node supports three types of credentials for different API access levels:
+
+### 1. Chatwoot API (Application API)
+
+Used for most operations - managing conversations, contacts, messages, teams, etc.
 
 1. In n8n, go to **Credentials > Add Credential**
 2. Search for **Chatwoot API**
@@ -93,15 +99,32 @@ docker restart n8n
 | **Account ID** | Your Chatwoot account ID | Found in URL: `/app/accounts/1/...` |
 | **API Access Token** | Your personal API token | Found in Profile Settings |
 
-### Getting Your API Access Token
-
+**Getting Your API Access Token:**
 1. Log in to Chatwoot
 2. Click your **profile icon** (bottom left)
 3. Go to **Profile Settings**
 4. Scroll to **Access Token**
 5. Copy or regenerate your token
 
-> **Note**: Keep your API token secure. It provides full access to your Chatwoot account.
+### 2. Chatwoot Platform API
+
+Used for platform-level operations - managing accounts, platform users, and account agent bots. Requires super admin access.
+
+| Field | Description | Example |
+|-------|-------------|---------|
+| **Base URL** | Your Chatwoot instance URL | `https://app.chatwoot.com` |
+| **Platform API Token** | Super admin platform token | Found in Super Admin settings |
+
+### 3. Chatwoot Public API
+
+Used for client-side/widget operations - creating contacts and conversations from external sources.
+
+| Field | Description | Example |
+|-------|-------------|---------|
+| **Base URL** | Your Chatwoot instance URL | `https://app.chatwoot.com` |
+| **Inbox Identifier** | The unique identifier for your inbox | Found in inbox settings (e.g., `abc123xyz`) |
+
+> **Note**: Keep your API tokens secure. They provide access to your Chatwoot account.
 
 ---
 
@@ -109,7 +132,10 @@ docker restart n8n
 
 ### Chatwoot Node
 
-The main node for interacting with the Chatwoot API. Supports 11 resources with full CRUD operations.
+The main node for interacting with Chatwoot APIs. Supports 27 resources across three API types:
+- **Application API** (20 resources) - Core operations for conversations, contacts, messages, etc.
+- **Platform API** (4 resources) - Admin operations for accounts, users, and agent bots
+- **Public API** (3 resources) - Client-side operations for widgets and external integrations
 
 ### Chatwoot Trigger
 
@@ -174,6 +200,9 @@ Full contact management with search and merge capabilities.
 | **Search** | Find contacts by name, email, phone, or identifier |
 | **Get Conversations** | List all conversations for a contact |
 | **Merge** | Merge two contacts into one |
+| **Filter** | Filter contacts with advanced criteria |
+| **Add Labels** | Add labels to a contact |
+| **List Labels** | Get all labels for a contact |
 
 ### Conversation
 
@@ -183,9 +212,16 @@ Manage customer conversations with assignment and labeling.
 |-----------|-------------|
 | **Get** | Get a single conversation with full details |
 | **Get Many** | List conversations with filters (status, inbox, team, labels, search) |
+| **Create** | Create a new conversation |
 | **Update Status** | Change status to open, resolved, pending, or snoozed |
+| **Update** | Update conversation (custom attributes, team, etc.) |
 | **Assign** | Assign to an agent or team (with dynamic dropdowns) |
 | **Add Labels** | Set labels on a conversation |
+| **List Labels** | Get all labels for a conversation |
+| **Toggle Priority** | Set conversation priority (urgent, high, medium, low, none) |
+| **Filter** | Filter conversations with advanced criteria |
+| **Update Custom Attributes** | Set custom attributes on conversation |
+| **Get Meta** | Get conversation metadata |
 
 ### Custom Attribute
 
@@ -207,7 +243,13 @@ Manage communication channels.
 |-----------|-------------|
 | **Get Many** | List all inboxes |
 | **Get** | Get inbox details |
+| **Create** | Create a new inbox |
 | **Update** | Modify inbox settings (name, greeting, auto-assignment, etc.) |
+| **Add Agent** | Add an agent to an inbox |
+| **Delete Agent** | Remove an agent from an inbox |
+| **Get Members** | List inbox members |
+| **Get Agent Bot** | Get associated agent bot |
+| **Set Agent Bot** | Associate an agent bot with inbox |
 
 ### Label
 
@@ -228,6 +270,8 @@ Send and retrieve messages in conversations.
 |-----------|-------------|
 | **Create** | Send a message (supports private notes) |
 | **Get Many** | Retrieve message history with cursor-based pagination |
+| **Update** | Update an existing message |
+| **Delete** | Delete a message |
 
 ### Team
 
@@ -240,6 +284,10 @@ Manage agent teams for conversation routing.
 | **Create** | Create a new team |
 | **Update** | Modify team settings |
 | **Delete** | Remove a team |
+| **Add Agent** | Add an agent to a team |
+| **Delete Agent** | Remove an agent from a team |
+| **Get Members** | List team members |
+| **Update Agents** | Update team agent memberships |
 
 ### Webhook
 
@@ -251,6 +299,190 @@ Manage webhook subscriptions programmatically.
 | **Create** | Register a new webhook URL with event subscriptions |
 | **Update** | Modify webhook URL or subscriptions |
 | **Delete** | Remove a webhook |
+
+### Agent Bot
+
+Manage AI agent bots.
+
+| Operation | Description |
+|-----------|-------------|
+| **Get Many** | List all agent bots |
+| **Get** | Retrieve an agent bot by ID |
+| **Create** | Create a new agent bot |
+| **Update** | Modify agent bot settings |
+| **Delete** | Remove an agent bot |
+
+### Automation Rule
+
+Manage automation rules for conversations.
+
+| Operation | Description |
+|-----------|-------------|
+| **Get Many** | List all automation rules |
+| **Get** | Retrieve an automation rule by ID |
+| **Create** | Create a new automation rule |
+| **Update** | Modify automation rule settings |
+| **Delete** | Remove an automation rule |
+
+### Custom Filter
+
+Manage saved filters for conversations and contacts.
+
+| Operation | Description |
+|-----------|-------------|
+| **Get Many** | List all custom filters |
+| **Get** | Retrieve a custom filter by ID |
+| **Create** | Create a new custom filter |
+| **Update** | Modify filter settings |
+| **Delete** | Remove a custom filter |
+
+### Report
+
+Access analytics and reporting data.
+
+| Operation | Description |
+|-----------|-------------|
+| **Account Summary** | Get account-level report summary |
+| **Agent Statistics** | Get agent conversation metrics |
+| **Conversation Counts** | Get conversation counts by status |
+| **Conversation Statistics** | Get statistics grouped by agent, inbox, team, or channel |
+
+### Profile
+
+Manage user profile.
+
+| Operation | Description |
+|-----------|-------------|
+| **Fetch** | Get the authenticated user's profile |
+
+### Help Center
+
+Manage knowledge base content.
+
+| Operation | Description |
+|-----------|-------------|
+| **Create Portal** | Create a new help center portal |
+| **Get Portal** | Retrieve portal details by slug |
+| **Update Portal** | Modify portal settings |
+| **Create Category** | Add a category to a portal |
+| **Create Article** | Add an article to a portal |
+
+### Integration
+
+Manage integrations (Dialogflow, Slack, etc.).
+
+| Operation | Description |
+|-----------|-------------|
+| **Get Many** | List all integrations |
+| **Create Hook** | Create an integration hook |
+| **Update Hook** | Modify hook settings |
+| **Delete Hook** | Remove an integration hook |
+
+### Audit Log
+
+Access account activity logs.
+
+| Operation | Description |
+|-----------|-------------|
+| **Get Many** | Retrieve account audit logs |
+
+### CSAT Survey
+
+Access customer satisfaction surveys.
+
+| Operation | Description |
+|-----------|-------------|
+| **Get** | Get CSAT survey for a conversation |
+
+---
+
+## Platform API Resources
+
+These resources require the **Chatwoot Platform API** credential.
+
+### Platform Account
+
+Manage accounts at the platform level.
+
+| Operation | Description |
+|-----------|-------------|
+| **Create** | Create a new account |
+| **Get** | Retrieve account details |
+| **Update** | Modify account settings |
+| **Delete** | Remove an account |
+
+### Platform User
+
+Manage users at the platform level.
+
+| Operation | Description |
+|-----------|-------------|
+| **Create** | Create a new platform user |
+| **Get** | Retrieve user details |
+| **Update** | Modify user settings |
+| **Delete** | Remove a user |
+| **Get SSO URL** | Generate SSO login URL |
+
+### Account User
+
+Manage users within a specific account.
+
+| Operation | Description |
+|-----------|-------------|
+| **Get Many** | List all users in an account |
+| **Create** | Add a user to an account |
+| **Delete** | Remove a user from an account |
+
+### Account Agent Bot
+
+Manage agent bots at the account level.
+
+| Operation | Description |
+|-----------|-------------|
+| **Get Many** | List all account agent bots |
+| **Get** | Retrieve an agent bot by ID |
+| **Create** | Create a new account agent bot |
+| **Update** | Modify agent bot settings |
+| **Delete** | Remove an account agent bot |
+
+---
+
+## Public API Resources
+
+These resources require the **Chatwoot Public API** credential.
+
+### Public Contact
+
+Manage contacts via the public API.
+
+| Operation | Description |
+|-----------|-------------|
+| **Create** | Create a contact via public API |
+| **Get** | Retrieve contact details |
+| **Update** | Update contact information |
+
+### Public Conversation
+
+Manage conversations via the public API.
+
+| Operation | Description |
+|-----------|-------------|
+| **Create** | Create a conversation via public API |
+| **Get** | Retrieve a conversation |
+| **Get Many** | List all conversations for a contact |
+| **Resolve** | Resolve/toggle conversation status |
+| **Toggle Typing** | Show typing indicator |
+| **Update Last Seen** | Mark messages as seen |
+
+### Public Message
+
+Manage messages via the public API.
+
+| Operation | Description |
+|-----------|-------------|
+| **Create** | Send a message via public API |
+| **Get Many** | List messages in a conversation |
+| **Update** | Update a message |
 
 ---
 
@@ -362,11 +594,17 @@ If the Chatwoot Trigger isn't receiving events:
 
 ## API Reference
 
-This node uses the [Chatwoot Application API v1](https://www.chatwoot.com/developers/api/).
+This node uses three Chatwoot APIs:
+
+- **Application API** - Core API for managing conversations, contacts, messages, etc.
+- **Platform API** - Admin API for managing accounts, users, and agent bots (requires super admin access)
+- **Public API** - Client-side API for widgets and external integrations
 
 ### API Documentation
 
-- [Chatwoot API Reference](https://www.chatwoot.com/developers/api/)
+- [Chatwoot Application API Reference](https://www.chatwoot.com/developers/api/)
+- [Chatwoot Platform API Reference](https://www.chatwoot.com/developers/api/#tag/Platform)
+- [Chatwoot Public API Reference](https://www.chatwoot.com/developers/api/#tag/Client-APIs)
 - [Webhooks Documentation](https://www.chatwoot.com/docs/product/features/webhooks)
 - [API Authentication](https://www.chatwoot.com/hc/user-guide/articles/1684764-api-access)
 
