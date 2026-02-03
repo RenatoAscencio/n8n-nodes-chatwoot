@@ -1,0 +1,53 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Coverage
+coverage/
+
+# Environment variables (never commit secrets)
+.env
+.env.local
+.env.*.local
+*.env
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Test artifacts
+test-results/
+playwright-report/
+
+# Package manager locks (keep one, usually package-lock.json)
+yarn.lock
+pnpm-lock.yaml
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Credentials and secrets
+**/credentials.json
+**/secrets.*
+*.pem
+*.key
