@@ -17,11 +17,12 @@ A comprehensive n8n community node for [Chatwoot](https://www.chatwoot.com/) - t
 
 ## Highlights
 
-- **11 Resources** - Full coverage of the Chatwoot API
-- **45+ Operations** - Complete CRUD operations for all resources
+- **15 Resources** - Comprehensive coverage of the Chatwoot API
+- **55+ Operations** - Complete CRUD operations for all resources
 - **Trigger Node** - Real-time webhook events from Chatwoot
 - **Dynamic Dropdowns** - Auto-populated lists for agents, teams, inboxes, and labels
 - **Smart Pagination** - Automatic handling with "Return All" option
+- **Reports & Analytics** - Access conversation and agent statistics
 - **Detailed Error Messages** - Clear feedback for troubleshooting
 
 ---
