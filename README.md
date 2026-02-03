@@ -36,7 +36,7 @@ Then restart n8n.
 
 ```bash
 # Clone the repository
-git clone https://github.com/renatoascencio/n8n-nodes-chatwoot.git
+git clone https://github.com/RenatoAscencio/n8n-nodes-chatwoot.git
 cd n8n-nodes-chatwoot
 
 # Install dependencies
@@ -181,6 +181,6 @@ npm run format     # Format code with Prettier
 
 ## Support
 
-- **Issues**: [GitHub Issues](https://github.com/renatoascencio/n8n-nodes-chatwoot/issues)
+- **Issues**: [GitHub Issues](https://github.com/RenatoAscencio/n8n-nodes-chatwoot/issues)
 - **Chatwoot Docs**: [developers.chatwoot.com](https://developers.chatwoot.com/)
 - **n8n Community**: [community.n8n.io](https://community.n8n.io/)
