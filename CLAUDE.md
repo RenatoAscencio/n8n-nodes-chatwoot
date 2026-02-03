@@ -2,7 +2,13 @@
 
 ## Project Overview
 
-This is an n8n community node package for integrating with Chatwoot, an open-source customer engagement platform. The node provides access to Chatwoot's API for managing conversations, messages, and contacts.
+This is an n8n community node package for integrating with Chatwoot, an open-source customer engagement platform. The node provides access to **three Chatwoot APIs**:
+
+- **Application API** (20 resources) — Core operations for conversations, contacts, messages, agents, teams, etc.
+- **Platform API** (4 resources) — Super admin operations for accounts, users, and agent bots
+- **Public API** (3 resources) — Client-side/widget operations for external integrations
+
+**Stats:** 27 resources, 130+ operations, 3 credential types
 
 ## Quick Start
 
@@ -28,23 +34,51 @@ npm run format
 ```
 n8n-nodes-chatwoot/
 ├── credentials/
-│   └── ChatwootApi.credentials.ts    # Authentication configuration
+│   ├── ChatwootApi.credentials.ts         # Application API auth
+│   ├── ChatwootPlatformApi.credentials.ts # Platform API auth (super admin)
+│   └── ChatwootPublicApi.credentials.ts   # Public API auth (inbox identifier)
 ├── nodes/
 │   └── Chatwoot/
-│       ├── Chatwoot.node.ts          # Main node with execute logic
-│       ├── Chatwoot.node.json        # Node metadata
-│       ├── chatwoot.svg              # Node icon
-│       ├── GenericFunctions.ts       # API helpers, pagination, error handling
-│       ├── types.ts                  # TypeScript interfaces
+│       ├── Chatwoot.node.ts               # Main node with execute logic
+│       ├── ChatwootTrigger.node.ts        # Webhook trigger node
+│       ├── Chatwoot.node.json             # Node metadata
+│       ├── chatwoot.svg                   # Node icon
+│       ├── GenericFunctions.ts            # API helpers for all 3 APIs
+│       ├── types.ts                       # TypeScript interfaces
 │       └── resources/
-│           ├── conversation/         # Conversation operations
-│           ├── message/              # Message operations
-│           └── contact/              # Contact operations
+│           ├── # Application API (20 resources)
+│           ├── account/                   # Account operations
+│           ├── agent/                     # Agent operations
+│           ├── agentBot/                  # Agent Bot operations
+│           ├── automationRule/            # Automation Rule operations
+│           ├── cannedResponse/            # Canned Response operations
+│           ├── contact/                   # Contact operations
+│           ├── conversation/              # Conversation operations
+│           ├── customAttribute/           # Custom Attribute operations
+│           ├── customFilter/              # Custom Filter operations
+│           ├── inbox/                     # Inbox operations
+│           ├── label/                     # Label operations
+│           ├── message/                   # Message operations
+│           ├── team/                      # Team operations
+│           ├── webhook/                   # Webhook operations
+│           ├── profile/                   # Profile operations
+│           ├── helpCenter/                # Help Center operations
+│           ├── integration/               # Integration operations
+│           ├── auditLog/                  # Audit Log operations
+│           ├── csatSurvey/                # CSAT Survey operations
+│           ├── report/                    # Report operations
+│           ├── # Platform API (4 resources)
+│           ├── platformAccount/           # Platform Account operations
+│           ├── platformUser/              # Platform User operations
+│           ├── accountUser/               # Account User operations
+│           ├── accountAgentBot/           # Account Agent Bot operations
+│           ├── # Public API (3 resources)
+│           ├── publicContact/             # Public Contact operations
+│           ├── publicConversation/        # Public Conversation operations
+│           └── publicMessage/             # Public Message operations
 ├── test/
-│   └── GenericFunctions.test.ts      # Unit tests
-├── examples/
-│   └── workflows/                    # Example n8n workflow JSONs
-├── dist/                             # Compiled output (generated)
+│   └── GenericFunctions.test.ts           # Unit tests
+├── dist/                                  # Compiled output (generated)
 ├── package.json
 ├── tsconfig.json
 └── .eslintrc.js
@@ -59,12 +93,60 @@ The main node file containing:
 - Execute function with all API logic
 
 ### `GenericFunctions.ts`
-Shared utilities:
-- `chatwootApiRequest()` - Make authenticated API calls
+Shared utilities for all three APIs:
+- `chatwootApiRequest()` - Make Application API calls (uses ChatwootApi credential)
+- `chatwootPlatformApiRequest()` - Make Platform API calls (uses ChatwootPlatformApi credential)
+- `chatwootPublicApiRequest()` - Make Public API calls (uses ChatwootPublicApi credential)
 - `chatwootApiRequestAllItems()` - Handle page-based pagination
 - `chatwootApiRequestAllMessages()` - Handle cursor-based message pagination
 - `validateId()` - Validate positive integer IDs
 - Error message mapping for HTTP status codes
+
+## Multi-Credential Architecture
+
+The node supports three credential types for different API scopes:
+
+| Credential | API Type | Auth Header | Base URL Pattern |
+|------------|----------|-------------|------------------|
+| ChatwootApi | Application | `api_access_token` | `{baseUrl}/api/v1/accounts/{accountId}/...` |
+| ChatwootPlatformApi | Platform | `api_access_token` | `{baseUrl}/platform/api/v1/...` |
+| ChatwootPublicApi | Public | None (inbox in URL) | `{baseUrl}/public/api/v1/inboxes/{inboxIdentifier}/...` |
+
+### Credential Selection in Chatwoot.node.ts
+
+Resources are mapped to credentials using `displayOptions`:
+
+```typescript
+credentials: [
+  {
+    name: 'chatwootApi',
+    required: true,
+    displayOptions: {
+      show: {
+        resource: ['account', 'agent', 'contact', 'conversation', ...], // Application API
+      },
+    },
+  },
+  {
+    name: 'chatwootPlatformApi',
+    required: true,
+    displayOptions: {
+      show: {
+        resource: ['platformAccount', 'platformUser', 'accountUser', 'accountAgentBot'],
+      },
+    },
+  },
+  {
+    name: 'chatwootPublicApi',
+    required: true,
+    displayOptions: {
+      show: {
+        resource: ['publicContact', 'publicConversation', 'publicMessage'],
+      },
+    },
+  },
+],
+```
 
 ### `resources/*/index.ts`
 Each resource folder contains:
@@ -177,13 +259,23 @@ export const newOperation: INodeProperties[] = [
 
 ## Chatwoot API Reference
 
-### Base URL Pattern
+### Application API
 ```
-{baseUrl}/api/v1/accounts/{accountId}/{endpoint}
+Base URL: {baseUrl}/api/v1/accounts/{accountId}/{endpoint}
+Header: api_access_token: YOUR_TOKEN
 ```
 
-### Authentication
-Header: `api_access_token: YOUR_TOKEN`
+### Platform API
+```
+Base URL: {baseUrl}/platform/api/v1/{endpoint}
+Header: api_access_token: PLATFORM_TOKEN
+```
+
+### Public API
+```
+Base URL: {baseUrl}/public/api/v1/inboxes/{inboxIdentifier}/{endpoint}
+No auth header (inbox identifier in URL)
+```
 
 ### Pagination Patterns
 
@@ -199,8 +291,9 @@ const response = await chatwootApiRequest(this, 'GET', `/conversations/${id}/mes
 // Response: { payload: [...messages] }
 ```
 
-### Key Endpoints
+### Key Endpoints by API
 
+**Application API:**
 | Resource | Endpoint | Method |
 |----------|----------|--------|
 | Conversations List | `/conversations` | GET |
@@ -214,6 +307,30 @@ const response = await chatwootApiRequest(this, 'GET', `/conversations/${id}/mes
 | Contact Update | `/contacts/{id}` | PUT |
 | Contact Delete | `/contacts/{id}` | DELETE |
 | Contact Search | `/contacts/search?q=` | GET |
+| Profile | `/profile` | GET |
+| Help Center Portal | `/portals/{slug}` | GET |
+| Audit Logs | `/audit_logs` | GET |
+
+**Platform API:**
+| Resource | Endpoint | Method |
+|----------|----------|--------|
+| Accounts List | `/accounts` | GET |
+| Account Create | `/accounts` | POST |
+| Account Get | `/accounts/{id}` | GET |
+| Users List | `/users` | GET |
+| User Create | `/users` | POST |
+| User SSO URL | `/users/{id}/login` | GET |
+| Account Users | `/accounts/{id}/account_users` | GET |
+
+**Public API:**
+| Resource | Endpoint | Method |
+|----------|----------|--------|
+| Contact Create | `/contacts` | POST |
+| Contact Get | `/contacts/{source_id}` | GET |
+| Conversation Create | `/contacts/{source_id}/conversations` | POST |
+| Conversations List | `/contacts/{source_id}/conversations` | GET |
+| Message Create | `/contacts/{source_id}/conversations/{id}/messages` | POST |
+| Toggle Typing | `/contacts/{source_id}/conversations/{id}/toggle_typing` | POST |
 
 ## Testing
 
