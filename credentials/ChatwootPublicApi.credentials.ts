@@ -1,4 +1,5 @@
 import type {
+  ICredentialTestRequest,
   ICredentialType,
   INodeProperties,
 } from 'n8n-workflow';
@@ -24,11 +25,23 @@ export class ChatwootPublicApi implements ICredentialType {
       type: 'string',
       default: '',
       description:
-        'The unique identifier for your inbox. This is the website_token or inbox_identifier from your website channel settings. Found in Inbox Settings → Configuration.',
+        'The unique identifier for your Web Widget inbox (a UUID string, not the numeric ID). Go to Settings → Inboxes → your Web Widget inbox → Configuration tab to find it. Note: only Web Widget (Channel::WebWidget) inboxes support the Public API; Telegram, Email, etc. do not.',
       required: true,
     },
   ];
 
-  // Public API doesn't require authentication headers - it uses inbox identifier in the URL
-  // No test request since it depends on having valid contact/conversation data
+  // Public API uses the inbox identifier in the URL path, not auth headers.
+  // The test creates a minimal contact to validate that the inbox exists and is a Web Widget.
+  // If the inbox identifier is invalid or not a Web Widget, Chatwoot returns 404.
+  test: ICredentialTestRequest = {
+    request: {
+      baseURL: '={{$credentials.baseUrl.replace(/\\/$/, "")}}',
+      url: '=/public/api/v1/inboxes/{{$credentials.inboxIdentifier}}/contacts',
+      method: 'POST',
+      body: {
+        identifier: 'n8n-credential-test',
+        name: 'n8n Credential Test',
+      },
+    },
+  };
 }
