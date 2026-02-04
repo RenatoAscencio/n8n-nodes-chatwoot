@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.1] - 2026-02-04
+
+### Fixed
+
+- **HTTP transport**: Prefer `this.helpers.httpRequest` (modern n8n) with automatic fallback to `this.helpers.request` (legacy) via new `performRequest()` wrapper
+- **Base URL validation**: `normalizeBaseUrl()` now rejects URLs without `http://` or `https://` protocol, throwing `NodeOperationError` with actionable message
+- **Help Center categories dropdown**: `getCategories` loadOptions now fetches real categories from `GET /portals/{slug}/categories` instead of returning an empty stub array
+
+### Added
+
+- **Public API credential test**: Declarative `ICredentialTestRequest` that validates inbox identifier by POSTing a test contact — catches invalid identifiers before workflow execution
+- **E2E test runner**: `scripts/e2e-runner.ts` — portable end-to-end test suite for Application, Platform, and Public APIs against a live Chatwoot instance
+- **E2E documentation**: `docs/TESTING_E2E.md` setup guide and `docs/E2E_RESULTS.md` run results
+- **Audit deliverables**: `docs/AUDIT_REPORT.md`, `docs/SECURITY_REVIEW.md`, `docs/RELEASE_READINESS.md`, `docs/UPSTREAM_PROPOSAL_CHATWOOT.md`
+
+### Improved
+
+- **Unit tests**: Expanded from 19 to 66 tests covering normalizeBaseUrl, URL construction, auth headers, request body handling, pagination patterns, and error mapping
+- **Public API credential UX**: Description now clarifies that only Web Widget inboxes (Channel::WebWidget) support the Public API, with instructions to find the UUID identifier
+
+---
+
 ## [0.4.0] - 2026-02-03
 
 ### Added
