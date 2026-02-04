@@ -67,11 +67,14 @@ export const createArticleOperation: INodeProperties[] = [
         description: 'ID of the author',
       },
       {
-        displayName: 'Category ID',
+        displayName: 'Category Name or ID',
         name: 'category_id',
-        type: 'number',
-        default: 0,
-        description: 'ID of the category',
+        type: 'options',
+        typeOptions: {
+          loadOptionsMethod: 'getCategories',
+        },
+        default: '',
+        description: 'Category to assign the article to. Requires Portal Slug to be filled first. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
       },
       {
         displayName: 'Description',
