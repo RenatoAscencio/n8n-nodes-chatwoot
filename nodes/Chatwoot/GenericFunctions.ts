@@ -3,12 +3,13 @@ import type {
   IExecuteFunctions,
   IHookFunctions,
   IHttpRequestMethods,
+  IHttpRequestOptions,
   ILoadOptionsFunctions,
   INodePropertyOptions,
   IRequestOptions,
   JsonObject,
 } from 'n8n-workflow';
-import { NodeApiError } from 'n8n-workflow';
+import { NodeApiError, NodeOperationError } from 'n8n-workflow';
 
 // ============================================================================
 // Types
@@ -27,10 +28,17 @@ export interface ApiRequestOptions {
 // ============================================================================
 
 /**
- * Normalize base URL by removing trailing slashes and whitespace
+ * Normalize and validate base URL.
+ * Trims whitespace, removes trailing slashes, and validates protocol.
  */
-function normalizeBaseUrl(baseUrl: string): string {
-  return baseUrl.trim().replace(/\/+$/, '');
+export function normalizeBaseUrl(baseUrl: string): string {
+  const trimmed = baseUrl.trim().replace(/\/+$/, '');
+  if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://')) {
+    throw new Error(
+      'Base URL must start with http:// or https:// (e.g., https://app.chatwoot.com)',
+    );
+  }
+  return trimmed;
 }
 
 /**
@@ -52,6 +60,38 @@ function getErrorMessage(statusCode: number, defaultMessage: string): string {
   return errorMessages[statusCode] || defaultMessage;
 }
 
+/**
+ * Internal HTTP request helper.
+ * Prefers this.helpers.httpRequest (n8n >= 0.175.0) with fallback to legacy this.helpers.request.
+ */
+async function performRequest(
+  ctx: IExecuteFunctions | ILoadOptionsFunctions | IHookFunctions,
+  method: IHttpRequestMethods,
+  url: string,
+  headers: IDataObject,
+  body?: IDataObject,
+  qs?: IDataObject,
+): Promise<IDataObject | IDataObject[]> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const helpers = ctx.helpers as any;
+  if (typeof helpers.httpRequest === 'function') {
+    const httpOpts: IHttpRequestOptions = { method, url, headers, json: true };
+    if (body) httpOpts.body = body;
+    if (qs) httpOpts.qs = qs;
+    return (await helpers.httpRequest(httpOpts)) as IDataObject | IDataObject[];
+  }
+  // Legacy fallback for older n8n versions
+  const reqOpts: IRequestOptions = {
+    method,
+    uri: url,
+    headers: headers as unknown as Record<string, string>,
+    json: true,
+  };
+  if (body) reqOpts.body = body;
+  if (qs) reqOpts.qs = qs;
+  return (await helpers.request(reqOpts)) as IDataObject | IDataObject[];
+}
+
 // ============================================================================
 // Application API (Account-level operations)
 // ============================================================================
@@ -68,34 +108,25 @@ export async function chatwootApiRequest(
 ): Promise<IDataObject | IDataObject[]> {
   const credentials = await this.getCredentials('chatwootApi');
 
-  const baseUrl = normalizeBaseUrl(credentials.baseUrl as string);
-  const accountId = credentials.accountId as number;
+  let baseUrl: string;
+  try {
+    baseUrl = normalizeBaseUrl(credentials.baseUrl as string);
+  } catch (e) {
+    throw new NodeOperationError(this.getNode(), (e as Error).message);
+  }
 
-  const options: IRequestOptions = {
-    method,
-    uri: `${baseUrl}/api/v1/accounts/${accountId}${endpoint}`,
-    headers: {
-      api_access_token: credentials.apiAccessToken as string,
-      'Content-Type': 'application/json',
-    },
-    qs,
-    body,
-    json: true,
+  const accountId = credentials.accountId as number;
+  const url = `${baseUrl}/api/v1/accounts/${accountId}${endpoint}`;
+  const headers: IDataObject = {
+    api_access_token: credentials.apiAccessToken as string,
+    'Content-Type': 'application/json',
   };
 
-  // Remove empty body for GET/DELETE requests
-  if (method === 'GET' || method === 'DELETE' || Object.keys(body).length === 0) {
-    delete options.body;
-  }
-
-  // Remove empty query string parameters
-  if (Object.keys(qs).length === 0) {
-    delete options.qs;
-  }
+  const reqBody = (method !== 'GET' && method !== 'DELETE' && Object.keys(body).length > 0) ? body : undefined;
+  const reqQs = Object.keys(qs).length > 0 ? qs : undefined;
 
   try {
-    const response = await this.helpers.request(options);
-    return response as IDataObject | IDataObject[];
+    return await performRequest(this, method, url, headers, reqBody, reqQs);
   } catch (error) {
     const statusCode = (error as JsonObject).statusCode as number;
     const message = getErrorMessage(
@@ -128,33 +159,24 @@ export async function chatwootPlatformApiRequest(
 ): Promise<IDataObject | IDataObject[]> {
   const credentials = await this.getCredentials('chatwootPlatformApi');
 
-  const baseUrl = normalizeBaseUrl(credentials.baseUrl as string);
+  let baseUrl: string;
+  try {
+    baseUrl = normalizeBaseUrl(credentials.baseUrl as string);
+  } catch (e) {
+    throw new NodeOperationError(this.getNode(), (e as Error).message);
+  }
 
-  const options: IRequestOptions = {
-    method,
-    uri: `${baseUrl}/platform/api/v1${endpoint}`,
-    headers: {
-      api_access_token: credentials.apiAccessToken as string,
-      'Content-Type': 'application/json',
-    },
-    qs,
-    body,
-    json: true,
+  const url = `${baseUrl}/platform/api/v1${endpoint}`;
+  const headers: IDataObject = {
+    api_access_token: credentials.apiAccessToken as string,
+    'Content-Type': 'application/json',
   };
 
-  // Remove empty body for GET/DELETE requests
-  if (method === 'GET' || method === 'DELETE' || Object.keys(body).length === 0) {
-    delete options.body;
-  }
-
-  // Remove empty query string parameters
-  if (Object.keys(qs).length === 0) {
-    delete options.qs;
-  }
+  const reqBody = (method !== 'GET' && method !== 'DELETE' && Object.keys(body).length > 0) ? body : undefined;
+  const reqQs = Object.keys(qs).length > 0 ? qs : undefined;
 
   try {
-    const response = await this.helpers.request(options);
-    return response as IDataObject | IDataObject[];
+    return await performRequest(this, method, url, headers, reqBody, reqQs);
   } catch (error) {
     const statusCode = (error as JsonObject).statusCode as number;
     const message = getErrorMessage(
@@ -187,32 +209,23 @@ export async function chatwootPublicApiRequest(
 ): Promise<IDataObject | IDataObject[]> {
   const credentials = await this.getCredentials('chatwootPublicApi');
 
-  const baseUrl = normalizeBaseUrl(credentials.baseUrl as string);
+  let baseUrl: string;
+  try {
+    baseUrl = normalizeBaseUrl(credentials.baseUrl as string);
+  } catch (e) {
+    throw new NodeOperationError(this.getNode(), (e as Error).message);
+  }
 
-  const options: IRequestOptions = {
-    method,
-    uri: `${baseUrl}/public/api/v1${endpoint}`,
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    qs,
-    body,
-    json: true,
+  const url = `${baseUrl}/public/api/v1${endpoint}`;
+  const headers: IDataObject = {
+    'Content-Type': 'application/json',
   };
 
-  // Remove empty body for GET/DELETE requests
-  if (method === 'GET' || method === 'DELETE' || Object.keys(body).length === 0) {
-    delete options.body;
-  }
-
-  // Remove empty query string parameters
-  if (Object.keys(qs).length === 0) {
-    delete options.qs;
-  }
+  const reqBody = (method !== 'GET' && method !== 'DELETE' && Object.keys(body).length > 0) ? body : undefined;
+  const reqQs = Object.keys(qs).length > 0 ? qs : undefined;
 
   try {
-    const response = await this.helpers.request(options);
-    return response as IDataObject | IDataObject[];
+    return await performRequest(this, method, url, headers, reqBody, reqQs);
   } catch (error) {
     const statusCode = (error as JsonObject).statusCode as number;
     const message = getErrorMessage(
@@ -583,7 +596,8 @@ export async function getPortals(
 }
 
 /**
- * Load categories for dropdown selection (Help Center)
+ * Load categories for dropdown selection (Help Center).
+ * Requires portalSlug to be set in the current node parameters.
  */
 export async function getCategories(
   this: ILoadOptionsFunctions,
@@ -591,10 +605,31 @@ export async function getCategories(
   const returnData: INodePropertyOptions[] = [];
 
   try {
-    // This would need the portal slug to work, so we return empty for now
-    // In practice, categories are loaded dynamically based on selected portal
+    const currentParams = this.getCurrentNodeParameters() as IDataObject;
+    const portalSlug = currentParams.portalSlug as string | undefined;
+
+    if (!portalSlug) {
+      return returnData;
+    }
+
+    const response = (await chatwootApiRequest.call(
+      this,
+      'GET',
+      `/portals/${portalSlug}/categories`,
+    )) as IDataObject;
+    const categories = (response.payload || response) as IDataObject[];
+
+    if (Array.isArray(categories)) {
+      for (const category of categories) {
+        const locale = category.locale as string;
+        returnData.push({
+          name: `${category.name}${locale ? ` (${locale})` : ''}`,
+          value: category.id as number,
+        });
+      }
+    }
   } catch {
-    // Return empty array on error
+    // Return empty array on error (portal may not exist or have no categories)
   }
 
   return returnData;
