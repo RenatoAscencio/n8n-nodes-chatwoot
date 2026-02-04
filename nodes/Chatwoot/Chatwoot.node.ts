@@ -20,6 +20,7 @@ import {
   getLabels,
   getAgentBots,
   getPortals,
+  getCategories,
   getIntegrations,
 } from './GenericFunctions';
 
@@ -231,6 +232,7 @@ export class Chatwoot implements INodeType {
       getLabels,
       getAgentBots,
       getPortals,
+      getCategories,
       getIntegrations,
     },
   };
