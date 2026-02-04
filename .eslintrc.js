@@ -12,6 +12,7 @@ module.exports = {
     '.eslintrc.js',
     'jest.config.js',
     'test/**',
+    'scripts/**',
   ],
   plugins: ['@typescript-eslint', 'eslint-plugin-n8n-nodes-base'],
   extends: [
