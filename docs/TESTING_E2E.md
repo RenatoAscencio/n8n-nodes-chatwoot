@@ -79,6 +79,41 @@ npx tsx scripts/e2e-runner.ts --suite public
 | Public Conversation | Create, Get Many | Creates conversation for public contact |
 | Public Message | Create, Get Many | Sends message via public API |
 
+## Enabling Platform & Public API Tests
+
+By default, only Application API tests run. Platform and Public API tests are **automatically skipped** if:
+- The required env vars are missing, **or**
+- The provided credentials lack sufficient privileges (e.g., non-super-admin token), **or**
+- The inbox identifier doesn't point to a Web Widget inbox.
+
+The runner probes each API before running its tests. If the probe fails, the entire suite is marked SKIP (exit code 0).
+
+### Platform API (super admin)
+
+1. Log into Chatwoot as a **super admin** user (the first user created during Chatwoot installation).
+2. Go to **Super Admin Console** → **Platform App** → create a new Platform App or use an existing one.
+3. Copy the **Access Token** and set it in `.env.local`:
+   ```
+   CHATWOOT_PLATFORM_TOKEN=your_super_admin_token
+   ```
+4. Run: `npx tsx scripts/e2e-runner.ts --suite platform`
+
+> **Tip:** If your Chatwoot instance doesn't expose `/super_admin`, the Platform API is not available in your deployment.
+
+### Public API (Web Widget inbox)
+
+1. In Chatwoot, go to **Settings → Inboxes → Add Inbox**.
+2. Choose **Website** as the channel type. Complete the setup.
+3. After creation, go to **Settings → Inboxes → your new inbox → Configuration**.
+4. Copy the **Inbox Identifier** (a UUID like `aBcDeFgH1234`). This is **not** the numeric ID.
+5. Set it in `.env.local`:
+   ```
+   CHATWOOT_INBOX_IDENTIFIER=aBcDeFgH1234
+   ```
+6. Run: `npx tsx scripts/e2e-runner.ts --suite public`
+
+> **Note:** Only **Web Widget** (Channel::WebWidget) inboxes support the Public API. Telegram, Email, API, and other channel types do **not** expose the `/public/api/v1/` endpoints.
+
 ## Test Data Management
 
 - The E2E runner creates test data with identifiable prefixes (`[E2E-TEST]`)
