@@ -737,6 +737,15 @@ export class Chatwoot implements INodeType {
             if (options.message_type) body.message_type = options.message_type;
             if (options.private !== undefined) body.private = options.private;
             if (options.content_type) body.content_type = options.content_type;
+            if (options.content_attributes) {
+              try {
+                body.content_attributes = typeof options.content_attributes === 'string'
+                  ? JSON.parse(options.content_attributes as string)
+                  : options.content_attributes;
+              } catch {
+                body.content_attributes = options.content_attributes;
+              }
+            }
 
             responseData = await chatwootApiRequest.call(this, 'POST', `/conversations/${conversationId}/messages`, body);
           } else if (operation === 'getAll') {
