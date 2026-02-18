@@ -110,6 +110,13 @@ export const createOperation: INodeProperties[] = [
         default: false,
         description: 'Whether to send as a private note (only visible to agents)',
       },
+      {
+        displayName: 'Content Attributes',
+        name: 'content_attributes',
+        type: 'json',
+        default: '{}',
+        description: 'JSON object with custom content attributes (e.g. {"source": "n8n_bot"} for anti-loop detection)',
+      },
     ],
   },
 ];
