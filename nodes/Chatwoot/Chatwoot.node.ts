@@ -703,10 +703,12 @@ export class Chatwoot implements INodeType {
             const customAttributes = this.getNodeParameter('customAttributes', i) as string;
 
             const body: IDataObject = {
-              custom_attributes: JSON.parse(customAttributes),
+              custom_attributes: typeof customAttributes === 'string'
+                ? JSON.parse(customAttributes)
+                : customAttributes,
             };
 
-            responseData = await chatwootApiRequest.call(this, 'POST', `/conversations/${conversationId}/custom_attributes`, body);
+            responseData = await chatwootApiRequest.call(this, 'PATCH', `/conversations/${conversationId}`, body);
           } else if (operation === 'listLabels') {
             const conversationId = validateId(this.getNodeParameter('conversationId', i), 'Conversation ID');
             responseData = await chatwootApiRequest.call(this, 'GET', `/conversations/${conversationId}/labels`);
