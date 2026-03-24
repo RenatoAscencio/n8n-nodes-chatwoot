@@ -67,6 +67,16 @@ export class ChatwootTrigger implements INodeType {
 						description: 'Triggered when conversation status changes (open, resolved, pending, snoozed)',
 					},
 					{
+						name: 'Conversation Typing Off',
+						value: 'conversation_typing_off',
+						description: 'Triggered when typing indicator stops',
+					},
+					{
+						name: 'Conversation Typing On',
+						value: 'conversation_typing_on',
+						description: 'Triggered when typing indicator starts',
+					},
+					{
 						name: 'Conversation Updated',
 						value: 'conversation_updated',
 						description: 'Triggered when a conversation is updated',

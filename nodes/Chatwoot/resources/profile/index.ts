@@ -1,5 +1,6 @@
 import type { INodeProperties } from 'n8n-workflow';
 import { fetchOperation } from './fetch.operation';
+import { updateOperation } from './update.operation';
 
 export const profileOperations: INodeProperties = {
   displayName: 'Operation',
@@ -18,8 +19,14 @@ export const profileOperations: INodeProperties = {
       description: 'Get the authenticated user profile',
       action: 'Fetch profile',
     },
+    {
+      name: 'Update',
+      value: 'update',
+      description: 'Update the authenticated user profile',
+      action: 'Update profile',
+    },
   ],
   default: 'fetch',
 };
 
-export const profileFields: INodeProperties[] = [...fetchOperation];
+export const profileFields: INodeProperties[] = [...fetchOperation, ...updateOperation];

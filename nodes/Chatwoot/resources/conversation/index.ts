@@ -11,6 +11,10 @@ import { filterOperation } from './filter.operation';
 import { updateCustomAttributesOperation } from './updateCustomAttributes.operation';
 import { listLabelsOperation } from './listLabels.operation';
 import { getMetaOperation } from './getMeta.operation';
+import { deleteOperation } from './delete.operation';
+import { muteOperation } from './mute.operation';
+import { unmuteOperation } from './unmute.operation';
+import { searchOperation } from './search.operation';
 
 export const conversationOperations: INodeProperties = {
   displayName: 'Operation',
@@ -40,6 +44,12 @@ export const conversationOperations: INodeProperties = {
       value: 'create',
       description: 'Create a new conversation',
       action: 'Create a conversation',
+    },
+    {
+      name: 'Delete',
+      value: 'delete',
+      description: 'Delete a conversation',
+      action: 'Delete a conversation',
     },
     {
       name: 'Filter',
@@ -72,10 +82,28 @@ export const conversationOperations: INodeProperties = {
       action: 'List conversation labels',
     },
     {
+      name: 'Mute',
+      value: 'mute',
+      description: 'Mute a conversation',
+      action: 'Mute a conversation',
+    },
+    {
+      name: 'Search',
+      value: 'search',
+      description: 'Search conversations by query',
+      action: 'Search conversations',
+    },
+    {
       name: 'Toggle Priority',
       value: 'togglePriority',
       description: 'Set conversation priority (urgent, high, medium, low, none)',
       action: 'Toggle conversation priority',
+    },
+    {
+      name: 'Unmute',
+      value: 'unmute',
+      description: 'Unmute a conversation',
+      action: 'Unmute a conversation',
     },
     {
       name: 'Update',
@@ -112,4 +140,8 @@ export const conversationFields: INodeProperties[] = [
   ...updateCustomAttributesOperation,
   ...listLabelsOperation,
   ...getMetaOperation,
+  ...deleteOperation,
+  ...muteOperation,
+  ...unmuteOperation,
+  ...searchOperation,
 ];
