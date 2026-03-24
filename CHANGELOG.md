@@ -5,6 +5,71 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-03-24
+
+### Added
+
+#### New Application API Resources
+
+- **Macro Resource** - NEW
+  - Get Many: List all macros
+  - Get: Retrieve a macro by ID
+  - Create: Create a new macro with actions
+  - Update: Modify macro settings
+  - Delete: Remove a macro
+  - Execute: Execute a macro on a conversation
+
+- **Notification Resource** - NEW
+  - Get Many: List notifications (with read/snoozed/sort filters)
+  - Mark Read: Mark a notification as read
+  - Mark Unread: Mark a notification as unread
+  - Mark All Read: Mark all notifications as read
+  - Delete: Remove a notification
+  - Unread Count: Get count of unread notifications
+
+- **Campaign Resource** - NEW
+  - Get Many: List all campaigns
+  - Get: Retrieve a campaign by ID
+  - Create: Create a new campaign
+  - Update: Modify campaign settings
+  - Delete: Remove a campaign
+
+- **Contact Note Resource** - NEW
+  - Get Many: List all notes for a contact
+  - Create: Create a note on a contact
+  - Update: Modify a contact note
+  - Delete: Remove a contact note
+
+- **Conversation Participant Resource** - NEW
+  - Get Many: List participants of a conversation
+  - Add: Add participants to a conversation
+  - Remove: Remove participants from a conversation
+
+### Enhanced
+
+- **Conversation Resource**
+  - Mute: Mute a conversation
+  - Unmute: Unmute a conversation
+  - Delete: Delete a conversation
+  - Search: Search conversations by query
+
+- **Profile Resource**
+  - Update: Update profile (name, email, availability, auto_offline)
+
+- **Chatwoot Trigger Node**
+  - Added conversation_typing_on and conversation_typing_off webhook events
+
+### Fixed
+
+- Fixed npm audit vulnerabilities (flatted, minimatch, ajv)
+
+### Technical
+
+- 32 total resources with 160+ operations
+- 10 webhook event types supported
+
+---
+
 ## [0.4.1] - 2026-02-04
 
 ### Fixed
