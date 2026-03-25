@@ -4,11 +4,11 @@
 
 This is an n8n community node package for integrating with Chatwoot, an open-source customer engagement platform. The node provides access to **three Chatwoot APIs**:
 
-- **Application API** (20 resources) — Core operations for conversations, contacts, messages, agents, teams, etc.
+- **Application API** (25 resources) — Core operations for conversations, contacts, messages, agents, teams, macros, notifications, campaigns, etc.
 - **Platform API** (4 resources) — Super admin operations for accounts, users, and agent bots
 - **Public API** (3 resources) — Client-side/widget operations for external integrations
 
-**Stats:** 27 resources, 130+ operations, 3 credential types
+**Stats:** 32 resources, 160+ operations, 3 credential types
 
 ## Quick Start
 
@@ -46,19 +46,24 @@ n8n-nodes-chatwoot/
 │       ├── GenericFunctions.ts            # API helpers for all 3 APIs
 │       ├── types.ts                       # TypeScript interfaces
 │       └── resources/
-│           ├── # Application API (20 resources)
+│           ├── # Application API (25 resources)
 │           ├── account/                   # Account operations
 │           ├── agent/                     # Agent operations
 │           ├── agentBot/                  # Agent Bot operations
 │           ├── automationRule/            # Automation Rule operations
+│           ├── campaign/                  # Campaign operations (v0.5.0)
 │           ├── cannedResponse/            # Canned Response operations
 │           ├── contact/                   # Contact operations
+│           ├── contactNote/               # Contact Note operations (v0.5.0)
 │           ├── conversation/              # Conversation operations
+│           ├── conversationParticipant/   # Conversation Participant ops (v0.5.0)
 │           ├── customAttribute/           # Custom Attribute operations
 │           ├── customFilter/              # Custom Filter operations
 │           ├── inbox/                     # Inbox operations
 │           ├── label/                     # Label operations
+│           ├── macro/                     # Macro operations (v0.5.0)
 │           ├── message/                   # Message operations
+│           ├── notification/              # Notification operations (v0.5.0)
 │           ├── team/                      # Team operations
 │           ├── webhook/                   # Webhook operations
 │           ├── profile/                   # Profile operations
@@ -307,7 +312,23 @@ const response = await chatwootApiRequest(this, 'GET', `/conversations/${id}/mes
 | Contact Update | `/contacts/{id}` | PUT |
 | Contact Delete | `/contacts/{id}` | DELETE |
 | Contact Search | `/contacts/search?q=` | GET |
-| Profile | `/profile` | GET |
+| Conversation Mute | `/conversations/{id}/mute` | POST |
+| Conversation Unmute | `/conversations/{id}/unmute` | POST |
+| Conversation Delete | `/conversations/{id}` | DELETE |
+| Conversation Search | `/conversations/search?q=` | GET |
+| Conversation Participants | `/conversations/{id}/participants` | GET/POST/DELETE |
+| Contact Notes | `/contacts/{id}/notes` | GET/POST |
+| Contact Note Update | `/contacts/{id}/notes/{nid}` | PATCH |
+| Macros List | `/macros` | GET |
+| Macro CRUD | `/macros/{id}` | GET/POST/PATCH/DELETE |
+| Macro Execute | `/macros/{id}/execute` | POST |
+| Notifications | `/notifications` | GET |
+| Notification Actions | `/notifications/{id}` | PATCH/DELETE |
+| Notification Read All | `/notifications/read_all` | POST |
+| Notification Unread Count | `/notifications/unread_count` | GET |
+| Campaigns List | `/campaigns` | GET |
+| Campaign CRUD | `/campaigns/{id}` | GET/POST/PATCH/DELETE |
+| Profile | `/profile` | GET/PUT |
 | Help Center Portal | `/portals/{slug}` | GET |
 | Audit Logs | `/audit_logs` | GET |
 
@@ -376,6 +397,22 @@ npm run test:coverage    # Coverage report
 2. Update `CHANGELOG.md`
 3. Build and test: `npm run build && npm test`
 4. Publish: `npm publish`
+
+## Sister Project: n8n-mcp-chatwoot
+
+The MCP server fork with Chatwoot integration is at `/Users/renatoascencio/Documents/Proyectos/Cursor/n8n-mcp-chatwoot`. It provides:
+- `chatwoot_doctor` MCP diagnostic tool
+- 5 pre-built Chatwoot workflow templates
+- Connection validation for Chatwoot API
+- Upstream PR: czlonkowski/n8n-mcp#570
+
+The MCP server creates workflows that use the n8n-nodes-chatwoot node. Changes to this node's credential fields or resource names may require updates to the MCP integration's workflow templates.
+
+## Deployment
+
+- **n8n test instance**: `test-n8n.vrfg1p.easypanel.host`
+- **MCP HTTP server**: `ghcr.io/renatoascencio/n8n-mcp:latest` (Docker, deployed on EasyPanel)
+- **MCP public URL**: `mcp.convo.chat`
 
 ## Resources
 
