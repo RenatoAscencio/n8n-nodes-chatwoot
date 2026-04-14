@@ -1,6 +1,6 @@
 {
   "name": "@renatoascencio/n8n-nodes-chatwoot",
-  "version": "0.7.3",
+  "version": "0.7.4",
   "publishConfig": {
     "access": "public"
   },

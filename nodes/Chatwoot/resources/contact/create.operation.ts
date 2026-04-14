@@ -2,21 +2,6 @@ import type { INodeProperties } from 'n8n-workflow';
 
 export const createOperation: INodeProperties[] = [
   {
-    displayName: 'Inbox ID',
-    name: 'inboxId',
-    type: 'number',
-    required: true,
-    default: 0,
-    displayOptions: {
-      show: {
-        resource: ['contact'],
-        operation: ['create'],
-      },
-    },
-    description:
-      'The inbox ID to associate the contact with. Find this in Chatwoot under Settings → Inboxes.',
-  },
-  {
     displayName: 'Name',
     name: 'name',
     type: 'string',
@@ -57,6 +42,14 @@ export const createOperation: INodeProperties[] = [
         default: '',
         description:
           'A unique external identifier for the contact from your system (e.g., user ID)',
+      },
+      {
+        displayName: 'Inbox ID',
+        name: 'inbox_id',
+        type: 'number',
+        default: 0,
+        description:
+          'The inbox ID to associate the contact with. Find this in Chatwoot under Settings → Inboxes.',
       },
       {
         displayName: 'Phone Number',
