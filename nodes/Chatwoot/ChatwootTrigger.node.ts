@@ -124,31 +124,6 @@ export class ChatwootTrigger implements INodeType {
 				const webhookUrl = this.getNodeWebhookUrl('default');
 				const webhookData = this.getWorkflowStaticData('node');
 
-				// If we have stored webhook data, check if it still exists
-				if (webhookData.webhookId) {
-					try {
-						const webhooks = (await chatwootApiRequest.call(
-							this,
-							'GET',
-							'/webhooks',
-						)) as IDataObject;
-
-						const existingWebhooks = (webhooks.payload || webhooks) as IWebhook[];
-
-						if (Array.isArray(existingWebhooks)) {
-							const webhook = existingWebhooks.find(
-								(w) => w.id === webhookData.webhookId,
-							);
-							if (webhook && webhook.url === webhookUrl) {
-								return true;
-							}
-						}
-					} catch {
-						// Webhook doesn't exist anymore
-					}
-				}
-
-				// Check if any webhook with our URL exists
 				try {
 					const webhooks = (await chatwootApiRequest.call(
 						this,
@@ -159,6 +134,26 @@ export class ChatwootTrigger implements INodeType {
 					const existingWebhooks = (webhooks.payload || webhooks) as IWebhook[];
 
 					if (Array.isArray(existingWebhooks)) {
+						// If we have a stored webhook ID, check if it still exists with the right URL
+						if (webhookData.webhookId) {
+							const storedWebhook = existingWebhooks.find(
+								(w) => w.id === webhookData.webhookId,
+							);
+							if (storedWebhook && storedWebhook.url === webhookUrl) {
+								return true;
+							}
+							// Stored webhook has wrong URL or was deleted — clean up stale ID
+							if (storedWebhook) {
+								try {
+									await chatwootApiRequest.call(this, 'DELETE', `/webhooks/${webhookData.webhookId}`);
+								} catch {
+									// Ignore cleanup errors
+								}
+							}
+							delete webhookData.webhookId;
+						}
+
+						// Check if any webhook with our URL already exists
 						const existingWebhook = existingWebhooks.find(
 							(w) => w.url === webhookUrl,
 						);
@@ -167,8 +162,12 @@ export class ChatwootTrigger implements INodeType {
 							return true;
 						}
 					}
-				} catch {
-					// Error checking webhooks
+				} catch (error) {
+					// Only swallow 404s — propagate auth/network errors
+					const statusCode = (error as { statusCode?: number }).statusCode;
+					if (statusCode && statusCode !== 404) {
+						throw error;
+					}
 				}
 
 				return false;

@@ -266,6 +266,8 @@ export interface ICustomAttributeUpdate extends IDataObject {
 export type WebhookSubscription =
   | 'conversation_created'
   | 'conversation_status_changed'
+  | 'conversation_typing_on'
+  | 'conversation_typing_off'
   | 'conversation_updated'
   | 'message_created'
   | 'message_updated'
@@ -555,6 +557,8 @@ export interface IReportParams extends IDataObject {
 export type TriggerEventType =
   | 'conversation_created'
   | 'conversation_status_changed'
+  | 'conversation_typing_on'
+  | 'conversation_typing_off'
   | 'conversation_updated'
   | 'message_created'
   | 'message_updated'
