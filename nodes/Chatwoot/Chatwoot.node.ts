@@ -796,10 +796,8 @@ export class Chatwoot implements INodeType {
           } else if (operation === 'toggleTyping') {
             const conversationId = validateId(this.getNodeParameter('conversationId', i), 'Conversation ID');
             const typingStatus = this.getNodeParameter('typingStatus', i) as string;
-            const isPrivate = this.getNodeParameter('isPrivate', i) as boolean;
             responseData = await chatwootApiRequest.call(this, 'POST', `/conversations/${conversationId}/toggle_typing_status`, {
               typing_status: typingStatus,
-              is_private: isPrivate,
             });
           } else {
             throw new NodeOperationError(this.getNode(), `Operation "${operation}" not supported`, { itemIndex: i });
@@ -1427,9 +1425,8 @@ export class Chatwoot implements INodeType {
                 const data = result.data as IDataObject;
                 const payload = (data?.payload || []) as IDataObject[];
                 allItems.push(...payload);
-                const meta = data?.meta as IDataObject;
-                const count = (meta?.count as number) || 0;
-                hasMore = payload.length > 0 && allItems.length < count;
+                // Chatwoot notifications are 15/page — stop when we get fewer than a full page
+                hasMore = payload.length >= 15;
                 page += 1;
                 if (page > 100) break;
               }
