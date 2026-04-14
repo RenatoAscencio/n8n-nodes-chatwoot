@@ -860,12 +860,12 @@ export class Chatwoot implements INodeType {
         // =====================================================================
         else if (resource === 'contact') {
           if (operation === 'create') {
-            const inboxId = validateId(this.getNodeParameter('inboxId', i), 'Inbox ID');
             const name = this.getNodeParameter('name', i) as string;
             const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
 
-            const body: IDataObject = { inbox_id: inboxId };
+            const body: IDataObject = {};
             if (name) body.name = name;
+            if (additionalFields.inbox_id) body.inbox_id = additionalFields.inbox_id;
             if (additionalFields.email) body.email = additionalFields.email;
             if (additionalFields.phone_number) body.phone_number = additionalFields.phone_number;
             if (additionalFields.identifier) body.identifier = additionalFields.identifier;
