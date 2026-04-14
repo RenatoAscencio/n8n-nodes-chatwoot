@@ -33,17 +33,4 @@ export const toggleTypingOperation: INodeProperties[] = [
     },
     description: 'Whether to show or hide the typing indicator',
   },
-  {
-    displayName: 'Is Private',
-    name: 'isPrivate',
-    type: 'boolean',
-    default: false,
-    displayOptions: {
-      show: {
-        resource: ['conversation'],
-        operation: ['toggleTyping'],
-      },
-    },
-    description: 'Whether the typing indicator is for a private note',
-  },
 ];
