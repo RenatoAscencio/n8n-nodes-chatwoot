@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] - 2026-04-14
+
+### Fixed
+
+- **CRITICAL: conversation.update** used `PUT` instead of `PATCH` — every call would fail with 404/405. Now uses correct `PATCH` method
+- **CRITICAL: csatSurvey.get** used non-existent endpoint `/csat_survey/{id}`. Fixed to `GET /csat_survey_responses?conversation_id={id}`
+- **All bare JSON.parse calls** (15+ locations) replaced with safe `parseJsonSafe()` helper that returns descriptive errors instead of raw SyntaxError crashes. Affected: conversation.create, conversation.filter, contact.create, contact.update, contact.filter, automationRule.create/update, customFilter.create/update, integration.createHook/updateHook, macro.create/update, campaign.create, platformUser.create/update, publicContact.create/update, publicConversation.create
+
+### Added
+
+- **Applied SLA Resource (Enterprise)** — 3 operations: list applied SLAs, get SLA metrics, download breached conversations CSV
+- **Notification Snooze** — snooze a notification until a specified time
+- **Profile Set Availability** — directly set online/offline/busy status
+- **parseJsonSafe()** utility in GenericFunctions — safe JSON parsing with descriptive errors, handles both string and object inputs
+
+### Technical
+
+- 36 total resources with 200+ operations
+- 211 unit tests (2 suites)
+
+---
+
 ## [0.6.1] - 2026-04-14
 
 ### Fixed

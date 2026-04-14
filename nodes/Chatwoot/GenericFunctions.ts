@@ -42,6 +42,20 @@ export function normalizeBaseUrl(baseUrl: string): string {
 }
 
 /**
+ * Safely parse a JSON string, returning the parsed value or the original value if already an object.
+ * Throws a descriptive error if the string is invalid JSON.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function parseJsonSafe(value: unknown, fieldName: string): any {
+  if (typeof value !== 'string') return value;
+  try {
+    return JSON.parse(value);
+  } catch {
+    throw new Error(`Invalid JSON in "${fieldName}": ${value.substring(0, 100)}`);
+  }
+}
+
+/**
  * Map Chatwoot HTTP error codes to user-friendly messages
  */
 function getErrorMessage(statusCode: number, defaultMessage: string): string {
