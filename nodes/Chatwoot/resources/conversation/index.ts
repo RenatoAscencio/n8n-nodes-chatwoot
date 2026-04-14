@@ -15,6 +15,8 @@ import { deleteOperation } from './delete.operation';
 import { muteOperation } from './mute.operation';
 import { unmuteOperation } from './unmute.operation';
 import { searchOperation } from './search.operation';
+import { transcriptOperation } from './transcript.operation';
+import { toggleTypingOperation } from './toggleTyping.operation';
 
 export const conversationOperations: INodeProperties = {
   displayName: 'Operation',
@@ -100,6 +102,18 @@ export const conversationOperations: INodeProperties = {
       action: 'Toggle conversation priority',
     },
     {
+      name: 'Toggle Typing',
+      value: 'toggleTyping',
+      description: 'Show or hide typing indicator in a conversation',
+      action: 'Toggle typing indicator',
+    },
+    {
+      name: 'Transcript',
+      value: 'transcript',
+      description: 'Send conversation transcript via email',
+      action: 'Send conversation transcript',
+    },
+    {
       name: 'Unmute',
       value: 'unmute',
       description: 'Unmute a conversation',
@@ -144,4 +158,6 @@ export const conversationFields: INodeProperties[] = [
   ...muteOperation,
   ...unmuteOperation,
   ...searchOperation,
+  ...transcriptOperation,
+  ...toggleTypingOperation,
 ];

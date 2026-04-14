@@ -4,11 +4,11 @@
 
 This is an n8n community node package for integrating with Chatwoot, an open-source customer engagement platform. The node provides access to **three Chatwoot APIs**:
 
-- **Application API** (25 resources) — Core operations for conversations, contacts, messages, agents, teams, macros, notifications, campaigns, etc.
+- **Application API** (28 resources) — Core operations for conversations, contacts, messages, agents, teams, macros, notifications, campaigns, companies, SLA policies, global search, etc.
 - **Platform API** (4 resources) — Super admin operations for accounts, users, and agent bots
 - **Public API** (3 resources) — Client-side/widget operations for external integrations
 
-**Stats:** 32 resources, 160+ operations, 3 credential types
+**Stats:** 35 resources, 195+ operations, 3 credential types
 
 ## Quick Start
 
@@ -46,13 +46,14 @@ n8n-nodes-chatwoot/
 │       ├── GenericFunctions.ts            # API helpers for all 3 APIs
 │       ├── types.ts                       # TypeScript interfaces
 │       └── resources/
-│           ├── # Application API (25 resources)
+│           ├── # Application API (28 resources)
 │           ├── account/                   # Account operations
 │           ├── agent/                     # Agent operations
 │           ├── agentBot/                  # Agent Bot operations
 │           ├── automationRule/            # Automation Rule operations
 │           ├── campaign/                  # Campaign operations (v0.5.0)
 │           ├── cannedResponse/            # Canned Response operations
+│           ├── company/                   # Company operations (v0.6.0, Enterprise)
 │           ├── contact/                   # Contact operations
 │           ├── contactNote/               # Contact Note operations (v0.5.0)
 │           ├── conversation/              # Conversation operations
@@ -64,6 +65,9 @@ n8n-nodes-chatwoot/
 │           ├── macro/                     # Macro operations (v0.5.0)
 │           ├── message/                   # Message operations
 │           ├── notification/              # Notification operations (v0.5.0)
+│           ├── report/                    # Report operations
+│           ├── search/                    # Global Search operations (v0.6.0)
+│           ├── slaPolicy/                 # SLA Policy operations (v0.6.0, Enterprise)
 │           ├── team/                      # Team operations
 │           ├── webhook/                   # Webhook operations
 │           ├── profile/                   # Profile operations
@@ -71,7 +75,6 @@ n8n-nodes-chatwoot/
 │           ├── integration/               # Integration operations
 │           ├── auditLog/                  # Audit Log operations
 │           ├── csatSurvey/                # CSAT Survey operations
-│           ├── report/                    # Report operations
 │           ├── # Platform API (4 resources)
 │           ├── platformAccount/           # Platform Account operations
 │           ├── platformUser/              # Platform User operations
@@ -328,6 +331,25 @@ const response = await chatwootApiRequest(this, 'GET', `/conversations/${id}/mes
 | Notification Unread Count | `/notifications/unread_count` | GET |
 | Campaigns List | `/campaigns` | GET |
 | Campaign CRUD | `/campaigns/{id}` | GET/POST/PATCH/DELETE |
+| Companies List | `/companies` | GET |
+| Company CRUD | `/companies/{id}` | GET/POST/PATCH/DELETE |
+| Company Search | `/companies/search?q=` | GET |
+| SLA Policies | `/sla_policies` | GET/POST |
+| SLA Policy CRUD | `/sla_policies/{id}` | GET/PATCH/DELETE |
+| Global Search | `/search?q=` | GET |
+| Search Conversations | `/search/conversations?q=` | GET |
+| Search Contacts | `/search/contacts?q=` | GET |
+| Search Messages | `/search/messages?q=` | GET |
+| Conversation Transcript | `/conversations/{id}/transcript` | POST |
+| Conversation Typing | `/conversations/{id}/toggle_typing_status` | POST |
+| Contact Import | `/contacts/import` | POST |
+| Contact Export | `/contacts/export` | POST |
+| Contactable Inboxes | `/contacts/{id}/contactable_inboxes` | GET |
+| CSAT Metrics | `/csat_survey_responses/metrics` | GET |
+| CSAT Download | `/csat_survey_responses/download` | GET |
+| Help Center Portals | `/portals` | GET |
+| Portal Categories | `/portals/{slug}/categories` | GET |
+| Portal Articles | `/portals/{slug}/articles` | GET |
 | Profile | `/profile` | GET/PUT |
 | Help Center Portal | `/portals/{slug}` | GET |
 | Audit Logs | `/audit_logs` | GET |
