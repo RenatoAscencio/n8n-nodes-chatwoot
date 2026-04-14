@@ -972,8 +972,31 @@ export class Chatwoot implements INodeType {
             const contactId = validateId(this.getNodeParameter('contactId', i), 'Contact ID');
             responseData = await chatwootApiRequest.call(this, 'GET', `/contacts/${contactId}/labels`);
           } else if (operation === 'import') {
-            const fileContent = this.getNodeParameter('fileContent', i) as string;
-            responseData = await chatwootApiRequest.call(this, 'POST', '/contacts/import', { import_file: fileContent });
+            const binaryPropertyName = this.getNodeParameter('binaryPropertyName', i) as string;
+            const binaryData = this.helpers.assertBinaryData(i, binaryPropertyName);
+            const buffer = await this.helpers.getBinaryDataBuffer(i, binaryPropertyName);
+
+            const credentials = await this.getCredentials('chatwootApi');
+            const baseUrl = (credentials.baseUrl as string).trim().replace(/\/+$/, '');
+            const accountId = credentials.accountId as number;
+
+            responseData = (await this.helpers.httpRequest({
+              method: 'POST',
+              url: `${baseUrl}/api/v1/accounts/${accountId}/contacts/import`,
+              headers: {
+                api_access_token: credentials.apiAccessToken as string,
+              },
+              body: {
+                import_file: {
+                  value: buffer,
+                  options: {
+                    filename: binaryData.fileName || 'contacts.csv',
+                    contentType: binaryData.mimeType || 'text/csv',
+                  },
+                },
+              },
+              json: true,
+            })) as IDataObject;
           } else if (operation === 'export') {
             const options = this.getNodeParameter('options', i) as IDataObject;
             const body: IDataObject = {};
