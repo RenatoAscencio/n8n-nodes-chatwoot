@@ -273,16 +273,17 @@ export async function chatwootApiRequestAllItems(
 ): Promise<IDataObject[]> {
   const returnData: IDataObject[] = [];
   let page = 1;
-  const perPage = 25; // Use a reasonable page size
+  let firstPageSize = 0;
 
-  qs.page = page;
+  // Clone qs to avoid mutating the caller's object
+  const paginatedQs = { ...qs };
 
   let responseData: IDataObject;
   let items: IDataObject[];
 
   do {
-    qs.page = page;
-    responseData = (await chatwootApiRequest.call(this, method, endpoint, body, qs)) as IDataObject;
+    paginatedQs.page = page;
+    responseData = (await chatwootApiRequest.call(this, method, endpoint, body, paginatedQs)) as IDataObject;
 
     // Handle different response formats
     if (responseData[propertyName] && Array.isArray(responseData[propertyName])) {
@@ -296,6 +297,12 @@ export async function chatwootApiRequestAllItems(
     }
 
     returnData.push(...items);
+
+    // Detect page size from first response (Chatwoot uses 15, 25, or other sizes per endpoint)
+    if (page === 1 && items.length > 0) {
+      firstPageSize = items.length;
+    }
+
     page++;
 
     // Check if we've reached the end based on meta information or item count
@@ -308,8 +315,8 @@ export async function chatwootApiRequestAllItems(
       }
     }
 
-    // If we got fewer items than the page size, we've reached the end
-    if (items.length < perPage) {
+    // If we got fewer items than the first page returned, we've reached the end
+    if (firstPageSize > 0 && items.length < firstPageSize) {
       break;
     }
 
@@ -335,16 +342,16 @@ export async function chatwootPlatformApiRequestAllItems(
 ): Promise<IDataObject[]> {
   const returnData: IDataObject[] = [];
   let page = 1;
-  const perPage = 25;
+  let firstPageSize = 0;
 
-  qs.page = page;
+  const paginatedQs = { ...qs };
 
   let responseData: IDataObject;
   let items: IDataObject[];
 
   do {
-    qs.page = page;
-    responseData = (await chatwootPlatformApiRequest.call(this, method, endpoint, body, qs)) as IDataObject;
+    paginatedQs.page = page;
+    responseData = (await chatwootPlatformApiRequest.call(this, method, endpoint, body, paginatedQs)) as IDataObject;
 
     if (responseData[propertyName] && Array.isArray(responseData[propertyName])) {
       items = responseData[propertyName] as IDataObject[];
@@ -357,9 +364,14 @@ export async function chatwootPlatformApiRequestAllItems(
     }
 
     returnData.push(...items);
+
+    if (page === 1 && items.length > 0) {
+      firstPageSize = items.length;
+    }
+
     page++;
 
-    if (items.length < perPage || page > 100) {
+    if ((firstPageSize > 0 && items.length < firstPageSize) || page > 100) {
       break;
     }
   } while (items.length > 0);
@@ -414,7 +426,13 @@ export async function chatwootApiRequestAllMessages(
 
     // Get the ID of the oldest message for the next cursor
     const oldestMessage = messages[messages.length - 1];
-    before = oldestMessage.id as number;
+    const oldestId = oldestMessage.id as number;
+
+    // Guard against falsy or unchanged cursor to prevent infinite loops
+    if (!oldestId || oldestId === before) {
+      break;
+    }
+    before = oldestId;
 
     // Check if we've reached the limit
     if (limit && returnData.length >= limit) {
@@ -488,7 +506,8 @@ export async function getAgents(
   const returnData: INodePropertyOptions[] = [];
 
   try {
-    const agents = (await chatwootApiRequest.call(this, 'GET', '/agents')) as IDataObject[];
+    const response = await chatwootApiRequest.call(this, 'GET', '/agents');
+    const agents = Array.isArray(response) ? response : [];
 
     for (const agent of agents) {
       returnData.push({
@@ -658,7 +677,8 @@ export async function getAgentBots(
   const returnData: INodePropertyOptions[] = [];
 
   try {
-    const agentBots = (await chatwootApiRequest.call(this, 'GET', '/agent_bots')) as IDataObject[];
+    const response = await chatwootApiRequest.call(this, 'GET', '/agent_bots');
+    const agentBots = Array.isArray(response) ? response : [];
 
     for (const bot of agentBots) {
       returnData.push({
