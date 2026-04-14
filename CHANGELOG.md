@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.1] - 2026-04-14
+
+### Fixed
+
+- **Contact Import**: Changed from string CSV to proper multipart file upload using n8n binary data — now works with Read Binary File and HTTP Request nodes
+
+### Added
+
+- **Unit Tests**: Added 130 new resource definition tests (66 → 196 total) covering all 13 resource modules — validates operation structure, alphabetical sorting, displayOptions targeting, and operation counts
+
+### Enhanced
+
+- **README.md**: Updated to reflect 35 resources, 195+ operations, 10 trigger events, and documented all new resources (Macro, Notification, Campaign, Contact Note, Conversation Participant, Company, SLA Policy, Search)
+
+---
+
 ## [0.6.0] - 2026-04-14
 
 ### Added

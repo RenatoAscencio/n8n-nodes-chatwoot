@@ -2,14 +2,11 @@ import type { INodeProperties } from 'n8n-workflow';
 
 export const importContactsOperation: INodeProperties[] = [
   {
-    displayName: 'File Content (CSV)',
-    name: 'fileContent',
+    displayName: 'Input Binary Field',
+    name: 'binaryPropertyName',
     type: 'string',
     required: true,
-    default: '',
-    typeOptions: {
-      rows: 5,
-    },
+    default: 'data',
     displayOptions: {
       show: {
         resource: ['contact'],
@@ -17,6 +14,6 @@ export const importContactsOperation: INodeProperties[] = [
       },
     },
     description:
-      'CSV content with headers: name, email, phone_number, identifier. First row must be headers.',
+      'Name of the binary property containing the CSV file to import. Use a "Read Binary File" or "HTTP Request" node to provide the file.',
   },
 ];

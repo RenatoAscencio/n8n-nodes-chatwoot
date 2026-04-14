@@ -17,10 +17,10 @@ A comprehensive n8n community node for [Chatwoot](https://www.chatwoot.com/) - t
 
 ## Highlights
 
-- **27 Resources** - Comprehensive coverage of Application, Platform, and Public APIs
-- **130+ Operations** - Complete CRUD operations for all resources
+- **35 Resources** - Comprehensive coverage of Application, Platform, and Public APIs
+- **195+ Operations** - Complete CRUD operations for all resources
 - **3 API Types** - Application API, Platform API, and Public API support
-- **Trigger Node** - Real-time webhook events from Chatwoot
+- **Trigger Node** - Real-time webhook events (10 event types) from Chatwoot
 - **Dynamic Dropdowns** - Auto-populated lists for agents, teams, inboxes, and labels
 - **Smart Pagination** - Automatic handling with "Return All" option
 - **Reports & Analytics** - Access conversation and agent statistics
@@ -132,8 +132,8 @@ Used for client-side/widget operations - creating contacts and conversations fro
 
 ### Chatwoot Node
 
-The main node for interacting with Chatwoot APIs. Supports 27 resources across three API types:
-- **Application API** (20 resources) - Core operations for conversations, contacts, messages, etc.
+The main node for interacting with Chatwoot APIs. Supports 35 resources across three API types:
+- **Application API** (28 resources) - Core operations for conversations, contacts, messages, macros, notifications, campaigns, companies, SLA policies, global search, etc.
 - **Platform API** (4 resources) - Admin operations for accounts, users, and agent bots
 - **Public API** (3 resources) - Client-side operations for widgets and external integrations
 
@@ -141,14 +141,16 @@ The main node for interacting with Chatwoot APIs. Supports 27 resources across t
 
 Webhook-based trigger that starts workflows when events occur in Chatwoot. Automatically registers and manages webhooks in your Chatwoot account.
 
-**Supported Events:**
+**Supported Events (10 total):**
+- `contact_created` - New contact added
+- `contact_updated` - Contact information changed
 - `conversation_created` - New conversation started
 - `conversation_status_changed` - Status changed (open/resolved/pending/snoozed)
+- `conversation_typing_off` - Typing indicator stopped
+- `conversation_typing_on` - Typing indicator started
 - `conversation_updated` - Conversation modified
 - `message_created` - New message sent or received
 - `message_updated` - Message edited
-- `contact_created` - New contact added
-- `contact_updated` - Contact information changed
 - `webwidget_triggered` - Web widget interaction
 
 ---
@@ -203,6 +205,9 @@ Full contact management with search and merge capabilities.
 | **Filter** | Filter contacts with advanced criteria |
 | **Add Labels** | Add labels to a contact |
 | **List Labels** | Get all labels for a contact |
+| **Import** | Import contacts from CSV file (binary upload) |
+| **Export** | Export contacts as CSV |
+| **Contactable Inboxes** | Get inboxes that can reach a contact |
 
 ### Conversation
 
@@ -222,6 +227,12 @@ Manage customer conversations with assignment and labeling.
 | **Filter** | Filter conversations with advanced criteria |
 | **Update Custom Attributes** | Set custom attributes on conversation |
 | **Get Meta** | Get conversation metadata |
+| **Mute** | Mute a conversation |
+| **Unmute** | Unmute a conversation |
+| **Delete** | Delete a conversation |
+| **Search** | Search conversations by query |
+| **Transcript** | Send conversation transcript via email |
+| **Toggle Typing** | Show/hide typing indicator |
 
 ### Custom Attribute
 
@@ -393,6 +404,103 @@ Access customer satisfaction surveys.
 | Operation | Description |
 |-----------|-------------|
 | **Get** | Get CSAT survey for a conversation |
+| **Metrics** | Get CSAT survey metrics summary |
+| **Download** | Download CSAT survey responses |
+
+### Macro
+
+Manage reusable action sequences.
+
+| Operation | Description |
+|-----------|-------------|
+| **Get Many** | List all macros |
+| **Get** | Retrieve a macro by ID |
+| **Create** | Create a new macro with actions |
+| **Update** | Modify macro settings |
+| **Delete** | Remove a macro |
+| **Execute** | Execute a macro on a conversation |
+
+### Notification
+
+Manage agent notifications.
+
+| Operation | Description |
+|-----------|-------------|
+| **Get Many** | List notifications (with read/snoozed filters) |
+| **Mark Read** | Mark a notification as read |
+| **Mark Unread** | Mark a notification as unread |
+| **Mark All Read** | Mark all notifications as read |
+| **Delete** | Remove a notification |
+| **Unread Count** | Get count of unread notifications |
+
+### Campaign
+
+Manage outbound campaigns.
+
+| Operation | Description |
+|-----------|-------------|
+| **Get Many** | List all campaigns |
+| **Get** | Retrieve a campaign by ID |
+| **Create** | Create a new campaign |
+| **Update** | Modify campaign settings |
+| **Delete** | Remove a campaign |
+
+### Contact Note
+
+Manage notes on contacts.
+
+| Operation | Description |
+|-----------|-------------|
+| **Get Many** | List all notes for a contact |
+| **Create** | Create a note on a contact |
+| **Update** | Modify a contact note |
+| **Delete** | Remove a contact note |
+
+### Conversation Participant
+
+Manage conversation watchers/participants.
+
+| Operation | Description |
+|-----------|-------------|
+| **Get Many** | List participants of a conversation |
+| **Add** | Add participants to a conversation |
+| **Remove** | Remove participants from a conversation |
+
+### Company (Enterprise)
+
+Manage B2B companies. Requires Chatwoot Enterprise.
+
+| Operation | Description |
+|-----------|-------------|
+| **Get Many** | List all companies with sorting |
+| **Get** | Retrieve a company by ID |
+| **Create** | Create a new company |
+| **Update** | Modify company settings |
+| **Delete** | Remove a company |
+| **Search** | Search companies by name or domain |
+
+### SLA Policy (Enterprise)
+
+Manage SLA policies. Requires Chatwoot Enterprise.
+
+| Operation | Description |
+|-----------|-------------|
+| **Get Many** | List all SLA policies |
+| **Get** | Retrieve an SLA policy by ID |
+| **Create** | Create an SLA policy with thresholds |
+| **Update** | Modify SLA policy settings |
+| **Delete** | Remove an SLA policy |
+
+### Search (Global)
+
+Search across all entities.
+
+| Operation | Description |
+|-----------|-------------|
+| **Search All** | Search across conversations, contacts, and messages |
+| **Search Conversations** | Search conversations only |
+| **Search Contacts** | Search contacts only |
+| **Search Messages** | Search messages only |
 
 ---
 
