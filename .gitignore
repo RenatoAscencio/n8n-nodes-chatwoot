@@ -6,6 +6,8 @@ dist/
 
 # IDE
 .idea/
+.vscode/
+wallaby.js
 *.swp
 *.swo
 *~
