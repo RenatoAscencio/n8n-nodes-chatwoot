@@ -4,6 +4,9 @@ import { getPortalOperation } from './getPortal.operation';
 import { updatePortalOperation } from './updatePortal.operation';
 import { createCategoryOperation } from './createCategory.operation';
 import { createArticleOperation } from './createArticle.operation';
+import { listPortalsOperation } from './listPortals.operation';
+import { listCategoriesOperation } from './listCategories.operation';
+import { listArticlesOperation } from './listArticles.operation';
 
 export const helpCenterOperations: INodeProperties = {
   displayName: 'Operation',
@@ -41,6 +44,24 @@ export const helpCenterOperations: INodeProperties = {
       action: 'Get portal',
     },
     {
+      name: 'List Articles',
+      value: 'listArticles',
+      description: 'List all articles in a portal',
+      action: 'List articles',
+    },
+    {
+      name: 'List Categories',
+      value: 'listCategories',
+      description: 'List all categories in a portal',
+      action: 'List categories',
+    },
+    {
+      name: 'List Portals',
+      value: 'listPortals',
+      description: 'List all help center portals',
+      action: 'List portals',
+    },
+    {
       name: 'Update Portal',
       value: 'updatePortal',
       description: 'Update a help center portal',
@@ -56,4 +77,7 @@ export const helpCenterFields: INodeProperties[] = [
   ...updatePortalOperation,
   ...createCategoryOperation,
   ...createArticleOperation,
+  ...listPortalsOperation,
+  ...listCategoriesOperation,
+  ...listArticlesOperation,
 ];

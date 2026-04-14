@@ -50,6 +50,9 @@ import { notificationOperations, notificationFields } from './resources/notifica
 import { campaignOperations, campaignFields } from './resources/campaign';
 import { contactNoteOperations, contactNoteFields } from './resources/contactNote';
 import { conversationParticipantOperations, conversationParticipantFields } from './resources/conversationParticipant';
+import { companyOperations, companyFields } from './resources/company';
+import { searchOperations as globalSearchOperations, searchFields as globalSearchFields } from './resources/search';
+import { slaPolicyOperations, slaPolicyFields } from './resources/slaPolicy';
 
 // Platform API Resource imports
 import { platformAccountOperations, platformAccountFields } from './resources/platformAccount';
@@ -108,6 +111,9 @@ export class Chatwoot implements INodeType {
               'campaign',
               'contactNote',
               'conversationParticipant',
+              'company',
+              'search',
+              'slaPolicy',
             ],
           },
         },
@@ -146,6 +152,7 @@ export class Chatwoot implements INodeType {
           { name: 'Automation Rule', value: 'automationRule' },
           { name: 'Campaign', value: 'campaign' },
           { name: 'Canned Response', value: 'cannedResponse' },
+          { name: 'Company (Enterprise)', value: 'company' },
           { name: 'Contact', value: 'contact' },
           { name: 'Contact Note', value: 'contactNote' },
           { name: 'Conversation', value: 'conversation' },
@@ -162,6 +169,8 @@ export class Chatwoot implements INodeType {
           { name: 'Notification', value: 'notification' },
           { name: 'Profile', value: 'profile' },
           { name: 'Report', value: 'report' },
+          { name: 'Search', value: 'search' },
+          { name: 'SLA Policy (Enterprise)', value: 'slaPolicy' },
           { name: 'Team', value: 'team' },
           { name: 'Webhook', value: 'webhook' },
           // Platform API Resources
@@ -202,6 +211,9 @@ export class Chatwoot implements INodeType {
       campaignOperations,
       contactNoteOperations,
       conversationParticipantOperations,
+      companyOperations,
+      globalSearchOperations,
+      slaPolicyOperations,
       // Platform API Operations
       platformAccountOperations,
       platformUserOperations,
@@ -237,6 +249,9 @@ export class Chatwoot implements INodeType {
       ...campaignFields,
       ...contactNoteFields,
       ...conversationParticipantFields,
+      ...companyFields,
+      ...globalSearchFields,
+      ...slaPolicyFields,
       // Platform API Fields
       ...platformAccountFields,
       ...platformUserFields,
@@ -770,6 +785,18 @@ export class Chatwoot implements INodeType {
               const payload = (result.payload || []) as IDataObject[];
               responseData = payload.slice(0, limit);
             }
+          } else if (operation === 'transcript') {
+            const conversationId = validateId(this.getNodeParameter('conversationId', i), 'Conversation ID');
+            const email = this.getNodeParameter('email', i) as string;
+            responseData = await chatwootApiRequest.call(this, 'POST', `/conversations/${conversationId}/transcript`, { email });
+          } else if (operation === 'toggleTyping') {
+            const conversationId = validateId(this.getNodeParameter('conversationId', i), 'Conversation ID');
+            const typingStatus = this.getNodeParameter('typingStatus', i) as string;
+            const isPrivate = this.getNodeParameter('isPrivate', i) as boolean;
+            responseData = await chatwootApiRequest.call(this, 'POST', `/conversations/${conversationId}/toggle_typing_status`, {
+              typing_status: typingStatus,
+              is_private: isPrivate,
+            });
           } else {
             throw new NodeOperationError(this.getNode(), `Operation "${operation}" not supported`, { itemIndex: i });
           }
@@ -944,6 +971,20 @@ export class Chatwoot implements INodeType {
           } else if (operation === 'listLabels') {
             const contactId = validateId(this.getNodeParameter('contactId', i), 'Contact ID');
             responseData = await chatwootApiRequest.call(this, 'GET', `/contacts/${contactId}/labels`);
+          } else if (operation === 'import') {
+            const fileContent = this.getNodeParameter('fileContent', i) as string;
+            responseData = await chatwootApiRequest.call(this, 'POST', '/contacts/import', { import_file: fileContent });
+          } else if (operation === 'export') {
+            const options = this.getNodeParameter('options', i) as IDataObject;
+            const body: IDataObject = {};
+            if (options.tag) body.tag = options.tag;
+            if (options.column_names) {
+              body.column_names = (options.column_names as string).split(',').map((c) => c.trim());
+            }
+            responseData = await chatwootApiRequest.call(this, 'POST', '/contacts/export', body);
+          } else if (operation === 'contactableInboxes') {
+            const contactId = validateId(this.getNodeParameter('contactId', i), 'Contact ID');
+            responseData = await chatwootApiRequest.call(this, 'GET', `/contacts/${contactId}/contactable_inboxes`);
           } else {
             throw new NodeOperationError(this.getNode(), `Operation "${operation}" not supported`, { itemIndex: i });
           }
@@ -1179,6 +1220,33 @@ export class Chatwoot implements INodeType {
 
             const body: IDataObject = { title, content, ...additionalFields };
             responseData = await chatwootApiRequest.call(this, 'POST', `/portals/${portalSlug}/articles`, body);
+          } else if (operation === 'listPortals') {
+            responseData = await chatwootApiRequest.call(this, 'GET', '/portals');
+          } else if (operation === 'listCategories') {
+            const portalSlug = this.getNodeParameter('portalSlug', i) as string;
+            const locale = this.getNodeParameter('locale', i, 'en') as string;
+            const qs: IDataObject = {};
+            if (locale) qs.locale = locale;
+            responseData = await chatwootApiRequest.call(this, 'GET', `/portals/${portalSlug}/categories`, {}, qs);
+          } else if (operation === 'listArticles') {
+            const portalSlug = this.getNodeParameter('portalSlug', i) as string;
+            const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+            const options = this.getNodeParameter('options', i) as IDataObject;
+
+            const qs: IDataObject = {};
+            if (options.locale) qs.locale = options.locale;
+            if (options.category_slug) qs.category_slug = options.category_slug;
+            if (options.status) qs.status = options.status;
+
+            if (returnAll) {
+              responseData = await chatwootApiRequestAllItems.call(this, 'GET', `/portals/${portalSlug}/articles`, {}, qs, 'payload');
+            } else {
+              const limit = this.getNodeParameter('limit', i) as number;
+              qs.page = 1;
+              const result = (await chatwootApiRequest.call(this, 'GET', `/portals/${portalSlug}/articles`, {}, qs)) as IDataObject;
+              const payload = (result.payload || []) as IDataObject[];
+              responseData = payload.slice(0, limit);
+            }
           } else {
             throw new NodeOperationError(this.getNode(), `Operation "${operation}" not supported`, { itemIndex: i });
           }
@@ -1245,6 +1313,18 @@ export class Chatwoot implements INodeType {
           if (operation === 'get') {
             const conversationId = validateId(this.getNodeParameter('conversationId', i), 'Conversation ID');
             responseData = await chatwootApiRequest.call(this, 'GET', `/csat_survey/${conversationId}`);
+          } else if (operation === 'metrics') {
+            const options = this.getNodeParameter('options', i) as IDataObject;
+            const qs: IDataObject = {};
+            if (options.since) qs.since = new Date(options.since as string).getTime() / 1000;
+            if (options.until) qs.until = new Date(options.until as string).getTime() / 1000;
+            responseData = await chatwootApiRequest.call(this, 'GET', '/csat_survey_responses/metrics', {}, qs);
+          } else if (operation === 'download') {
+            const options = this.getNodeParameter('options', i) as IDataObject;
+            const qs: IDataObject = {};
+            if (options.since) qs.since = new Date(options.since as string).getTime() / 1000;
+            if (options.until) qs.until = new Date(options.until as string).getTime() / 1000;
+            responseData = await chatwootApiRequest.call(this, 'GET', '/csat_survey_responses/download', {}, qs);
           } else {
             throw new NodeOperationError(this.getNode(), `Operation "${operation}" not supported`, { itemIndex: i });
           }
@@ -1445,6 +1525,159 @@ export class Chatwoot implements INodeType {
             const userIdsStr = this.getNodeParameter('userIds', i) as string;
             const userIds = userIdsStr.split(',').map((id) => parseInt(id.trim(), 10));
             responseData = await chatwootApiRequest.call(this, 'DELETE', `/conversations/${conversationId}/participants`, { user_ids: userIds });
+          } else {
+            throw new NodeOperationError(this.getNode(), `Operation "${operation}" not supported`, { itemIndex: i });
+          }
+        }
+
+        // =====================================================================
+        // COMPANY (Enterprise)
+        // =====================================================================
+        else if (resource === 'company') {
+          if (operation === 'getAll') {
+            const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+            const options = this.getNodeParameter('options', i) as IDataObject;
+            const qs: IDataObject = {};
+            if (options.sort) qs.sort = options.sort;
+
+            if (returnAll) {
+              responseData = await chatwootApiRequestAllItems.call(this, 'GET', '/companies', {}, qs, 'payload');
+            } else {
+              const limit = this.getNodeParameter('limit', i) as number;
+              qs.page = 1;
+              const result = (await chatwootApiRequest.call(this, 'GET', '/companies', {}, qs)) as IDataObject;
+              const payload = (result.payload || []) as IDataObject[];
+              responseData = payload.slice(0, limit);
+            }
+          } else if (operation === 'get') {
+            const companyId = validateId(this.getNodeParameter('companyId', i), 'Company ID');
+            responseData = await chatwootApiRequest.call(this, 'GET', `/companies/${companyId}`);
+          } else if (operation === 'create') {
+            const name = this.getNodeParameter('name', i) as string;
+            const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
+            const body: IDataObject = { name };
+            if (additionalFields.domain) body.domain = additionalFields.domain;
+            if (additionalFields.description) body.description = additionalFields.description;
+            responseData = await chatwootApiRequest.call(this, 'POST', '/companies', body);
+          } else if (operation === 'update') {
+            const companyId = validateId(this.getNodeParameter('companyId', i), 'Company ID');
+            const updateFields = this.getNodeParameter('updateFields', i) as IDataObject;
+            const body: IDataObject = {};
+            if (updateFields.name) body.name = updateFields.name;
+            if (updateFields.domain) body.domain = updateFields.domain;
+            if (updateFields.description) body.description = updateFields.description;
+            responseData = await chatwootApiRequest.call(this, 'PATCH', `/companies/${companyId}`, body);
+          } else if (operation === 'delete') {
+            const companyId = validateId(this.getNodeParameter('companyId', i), 'Company ID');
+            await chatwootApiRequest.call(this, 'DELETE', `/companies/${companyId}`);
+            responseData = { success: true, id: companyId };
+          } else if (operation === 'search') {
+            const query = this.getNodeParameter('query', i) as string;
+            const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+            const qs: IDataObject = { q: query };
+
+            if (returnAll) {
+              responseData = await chatwootApiRequestAllItems.call(this, 'GET', '/companies/search', {}, qs, 'payload');
+            } else {
+              const limit = this.getNodeParameter('limit', i) as number;
+              qs.page = 1;
+              const result = (await chatwootApiRequest.call(this, 'GET', '/companies/search', {}, qs)) as IDataObject;
+              const payload = (result.payload || []) as IDataObject[];
+              responseData = payload.slice(0, limit);
+            }
+          } else {
+            throw new NodeOperationError(this.getNode(), `Operation "${operation}" not supported`, { itemIndex: i });
+          }
+        }
+
+        // =====================================================================
+        // SEARCH (Global)
+        // =====================================================================
+        else if (resource === 'search') {
+          if (operation === 'searchAll') {
+            const query = this.getNodeParameter('query', i) as string;
+            responseData = await chatwootApiRequest.call(this, 'GET', '/search', {}, { q: query });
+          } else if (operation === 'searchConversations') {
+            const query = this.getNodeParameter('query', i) as string;
+            const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+            const qs: IDataObject = { q: query };
+
+            if (returnAll) {
+              responseData = await chatwootApiRequestAllItems.call(this, 'GET', '/search/conversations', {}, qs, 'payload');
+            } else {
+              const limit = this.getNodeParameter('limit', i) as number;
+              qs.page = 1;
+              const result = (await chatwootApiRequest.call(this, 'GET', '/search/conversations', {}, qs)) as IDataObject;
+              const payload = (result.payload || []) as IDataObject[];
+              responseData = payload.slice(0, limit);
+            }
+          } else if (operation === 'searchContacts') {
+            const query = this.getNodeParameter('query', i) as string;
+            const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+            const qs: IDataObject = { q: query };
+
+            if (returnAll) {
+              responseData = await chatwootApiRequestAllItems.call(this, 'GET', '/search/contacts', {}, qs, 'payload');
+            } else {
+              const limit = this.getNodeParameter('limit', i) as number;
+              qs.page = 1;
+              const result = (await chatwootApiRequest.call(this, 'GET', '/search/contacts', {}, qs)) as IDataObject;
+              const payload = (result.payload || []) as IDataObject[];
+              responseData = payload.slice(0, limit);
+            }
+          } else if (operation === 'searchMessages') {
+            const query = this.getNodeParameter('query', i) as string;
+            const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+            const qs: IDataObject = { q: query };
+
+            if (returnAll) {
+              responseData = await chatwootApiRequestAllItems.call(this, 'GET', '/search/messages', {}, qs, 'payload');
+            } else {
+              const limit = this.getNodeParameter('limit', i) as number;
+              qs.page = 1;
+              const result = (await chatwootApiRequest.call(this, 'GET', '/search/messages', {}, qs)) as IDataObject;
+              const payload = (result.payload || []) as IDataObject[];
+              responseData = payload.slice(0, limit);
+            }
+          } else {
+            throw new NodeOperationError(this.getNode(), `Operation "${operation}" not supported`, { itemIndex: i });
+          }
+        }
+
+        // =====================================================================
+        // SLA POLICY (Enterprise)
+        // =====================================================================
+        else if (resource === 'slaPolicy') {
+          if (operation === 'getAll') {
+            responseData = await chatwootApiRequest.call(this, 'GET', '/sla_policies');
+          } else if (operation === 'get') {
+            const slaPolicyId = validateId(this.getNodeParameter('slaPolicyId', i), 'SLA Policy ID');
+            responseData = await chatwootApiRequest.call(this, 'GET', `/sla_policies/${slaPolicyId}`);
+          } else if (operation === 'create') {
+            const name = this.getNodeParameter('name', i) as string;
+            const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
+            const body: IDataObject = { name };
+            if (additionalFields.description) body.description = additionalFields.description;
+            if (additionalFields.first_response_time_threshold) body.first_response_time_threshold = additionalFields.first_response_time_threshold;
+            if (additionalFields.next_response_time_threshold) body.next_response_time_threshold = additionalFields.next_response_time_threshold;
+            if (additionalFields.resolution_time_threshold) body.resolution_time_threshold = additionalFields.resolution_time_threshold;
+            if (additionalFields.only_during_business_hours !== undefined) body.only_during_business_hours = additionalFields.only_during_business_hours;
+            responseData = await chatwootApiRequest.call(this, 'POST', '/sla_policies', body);
+          } else if (operation === 'update') {
+            const slaPolicyId = validateId(this.getNodeParameter('slaPolicyId', i), 'SLA Policy ID');
+            const updateFields = this.getNodeParameter('updateFields', i) as IDataObject;
+            const body: IDataObject = {};
+            if (updateFields.name) body.name = updateFields.name;
+            if (updateFields.description) body.description = updateFields.description;
+            if (updateFields.first_response_time_threshold) body.first_response_time_threshold = updateFields.first_response_time_threshold;
+            if (updateFields.next_response_time_threshold) body.next_response_time_threshold = updateFields.next_response_time_threshold;
+            if (updateFields.resolution_time_threshold) body.resolution_time_threshold = updateFields.resolution_time_threshold;
+            if (updateFields.only_during_business_hours !== undefined) body.only_during_business_hours = updateFields.only_during_business_hours;
+            responseData = await chatwootApiRequest.call(this, 'PATCH', `/sla_policies/${slaPolicyId}`, body);
+          } else if (operation === 'delete') {
+            const slaPolicyId = validateId(this.getNodeParameter('slaPolicyId', i), 'SLA Policy ID');
+            await chatwootApiRequest.call(this, 'DELETE', `/sla_policies/${slaPolicyId}`);
+            responseData = { success: true, id: slaPolicyId };
           } else {
             throw new NodeOperationError(this.getNode(), `Operation "${operation}" not supported`, { itemIndex: i });
           }

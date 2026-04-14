@@ -5,6 +5,61 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2026-04-14
+
+### Added
+
+#### New Application API Resources
+
+- **Company Resource (Enterprise)** - NEW
+  - Get Many: List all companies with sorting
+  - Get: Retrieve a company by ID
+  - Create: Create a new company
+  - Update: Modify company settings
+  - Delete: Remove a company
+  - Search: Search companies by name or domain
+
+- **SLA Policy Resource (Enterprise)** - NEW
+  - Get Many: List all SLA policies
+  - Get: Retrieve an SLA policy by ID
+  - Create: Create an SLA policy with response/resolution thresholds
+  - Update: Modify SLA policy settings
+  - Delete: Remove an SLA policy
+
+- **Search Resource (Global)** - NEW
+  - Search All: Search across all entities (conversations, contacts, messages)
+  - Search Conversations: Search conversations only
+  - Search Contacts: Search contacts only
+  - Search Messages: Search messages only
+
+### Enhanced
+
+- **Conversation Resource**
+  - Transcript: Send conversation transcript via email
+  - Toggle Typing: Show/hide typing indicator
+
+- **Contact Resource**
+  - Import: Import contacts from CSV data
+  - Export: Export contacts as CSV
+  - Contactable Inboxes: Get inboxes that can reach a contact
+
+- **Help Center Resource**
+  - List Portals: List all help center portals
+  - List Categories: List categories in a portal
+  - List Articles: List articles in a portal with filters
+
+- **CSAT Survey Resource**
+  - Metrics: Get CSAT survey metrics summary
+  - Download: Download CSAT survey responses
+
+### Technical
+
+- 35 total resources with 195+ operations
+- 3 new resource folders (company, search, slaPolicy)
+- 10 new operations on existing resources
+
+---
+
 ## [0.5.0] - 2026-03-24
 
 ### Added

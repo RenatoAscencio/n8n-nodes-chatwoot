@@ -10,6 +10,9 @@ import { mergeOperation } from './merge.operation';
 import { filterOperation } from './filter.operation';
 import { addLabelsOperation } from './addLabels.operation';
 import { listLabelsOperation } from './listLabels.operation';
+import { importContactsOperation } from './importContacts.operation';
+import { exportContactsOperation } from './exportContacts.operation';
+import { contactableInboxesOperation } from './contactableInboxes.operation';
 
 export const contactOperations: INodeProperties = {
   displayName: 'Operation',
@@ -29,6 +32,12 @@ export const contactOperations: INodeProperties = {
       action: 'Add labels to contact',
     },
     {
+      name: 'Contactable Inboxes',
+      value: 'contactableInboxes',
+      description: 'Get inboxes that can be used to reach a contact',
+      action: 'Get contactable inboxes',
+    },
+    {
       name: 'Create',
       value: 'create',
       description: 'Create a new contact',
@@ -39,6 +48,12 @@ export const contactOperations: INodeProperties = {
       value: 'delete',
       description: 'Delete a contact',
       action: 'Delete a contact',
+    },
+    {
+      name: 'Export',
+      value: 'export',
+      description: 'Export contacts as CSV',
+      action: 'Export contacts',
     },
     {
       name: 'Filter',
@@ -63,6 +78,12 @@ export const contactOperations: INodeProperties = {
       value: 'getAll',
       description: 'Get many contacts',
       action: 'Get many contacts',
+    },
+    {
+      name: 'Import',
+      value: 'import',
+      description: 'Import contacts from CSV data',
+      action: 'Import contacts',
     },
     {
       name: 'List Labels',
@@ -104,4 +125,7 @@ export const contactFields: INodeProperties[] = [
   ...filterOperation,
   ...addLabelsOperation,
   ...listLabelsOperation,
+  ...importContactsOperation,
+  ...exportContactsOperation,
+  ...contactableInboxesOperation,
 ];
