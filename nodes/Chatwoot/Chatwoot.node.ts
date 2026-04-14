@@ -14,6 +14,7 @@ import {
   chatwootPlatformApiRequest,
   chatwootPublicApiRequest,
   validateId,
+  parseJsonSafe,
   getAgents,
   getTeams,
   getInboxes,
@@ -53,6 +54,7 @@ import { conversationParticipantOperations, conversationParticipantFields } from
 import { companyOperations, companyFields } from './resources/company';
 import { searchOperations as globalSearchOperations, searchFields as globalSearchFields } from './resources/search';
 import { slaPolicyOperations, slaPolicyFields } from './resources/slaPolicy';
+import { appliedSlaOperations, appliedSlaFields } from './resources/appliedSla';
 
 // Platform API Resource imports
 import { platformAccountOperations, platformAccountFields } from './resources/platformAccount';
@@ -114,6 +116,7 @@ export class Chatwoot implements INodeType {
               'company',
               'search',
               'slaPolicy',
+              'appliedSla',
             ],
           },
         },
@@ -148,6 +151,7 @@ export class Chatwoot implements INodeType {
           { name: 'Account', value: 'account' },
           { name: 'Agent', value: 'agent' },
           { name: 'Agent Bot', value: 'agentBot' },
+          { name: 'Applied SLA (Enterprise)', value: 'appliedSla' },
           { name: 'Audit Log', value: 'auditLog' },
           { name: 'Automation Rule', value: 'automationRule' },
           { name: 'Campaign', value: 'campaign' },
@@ -214,6 +218,7 @@ export class Chatwoot implements INodeType {
       companyOperations,
       globalSearchOperations,
       slaPolicyOperations,
+      appliedSlaOperations,
       // Platform API Operations
       platformAccountOperations,
       platformUserOperations,
@@ -252,6 +257,7 @@ export class Chatwoot implements INodeType {
       ...companyFields,
       ...globalSearchFields,
       ...slaPolicyFields,
+      ...appliedSlaFields,
       // Platform API Fields
       ...platformAccountFields,
       ...platformUserFields,
@@ -703,7 +709,7 @@ export class Chatwoot implements INodeType {
             if (additionalFields.assignee_id) body.assignee_id = additionalFields.assignee_id;
             if (additionalFields.team_id) body.team_id = additionalFields.team_id;
             if (additionalFields.custom_attributes) {
-              body.custom_attributes = JSON.parse(additionalFields.custom_attributes as string);
+              body.custom_attributes = parseJsonSafe(additionalFields.custom_attributes, 'custom_attributes');
             }
 
             responseData = await chatwootApiRequest.call(this, 'POST', '/conversations', body);
@@ -723,12 +729,12 @@ export class Chatwoot implements INodeType {
             if (updateFields.team_id) body.team_id = updateFields.team_id;
             if (updateFields.status) body.status = updateFields.status;
 
-            responseData = await chatwootApiRequest.call(this, 'PUT', `/conversations/${conversationId}`, body);
+            responseData = await chatwootApiRequest.call(this, 'PATCH', `/conversations/${conversationId}`, body);
           } else if (operation === 'filter') {
             const filterPayload = this.getNodeParameter('filterPayload', i) as string;
             const returnAll = this.getNodeParameter('returnAll', i) as boolean;
 
-            const body: IDataObject = { payload: JSON.parse(filterPayload) };
+            const body: IDataObject = { payload: parseJsonSafe(filterPayload, 'filter payload') };
 
             if (returnAll) {
               responseData = await chatwootApiRequestAllItems.call(this, 'POST', '/conversations/filter', body, {}, 'payload');
@@ -743,9 +749,7 @@ export class Chatwoot implements INodeType {
             const customAttributes = this.getNodeParameter('customAttributes', i) as string;
 
             const body: IDataObject = {
-              custom_attributes: typeof customAttributes === 'string'
-                ? JSON.parse(customAttributes)
-                : customAttributes,
+              custom_attributes: parseJsonSafe(customAttributes, 'custom_attributes'),
             };
 
             responseData = await chatwootApiRequest.call(this, 'PATCH', `/conversations/${conversationId}`, body);
@@ -868,10 +872,7 @@ export class Chatwoot implements INodeType {
             if (additionalFields.phone_number) body.phone_number = additionalFields.phone_number;
             if (additionalFields.identifier) body.identifier = additionalFields.identifier;
             if (additionalFields.custom_attributes) {
-              body.custom_attributes =
-                typeof additionalFields.custom_attributes === 'string'
-                  ? JSON.parse(additionalFields.custom_attributes)
-                  : additionalFields.custom_attributes;
+              body.custom_attributes = parseJsonSafe(additionalFields.custom_attributes, 'custom_attributes');
             }
 
             responseData = await chatwootApiRequest.call(this, 'POST', '/contacts', body);
@@ -906,10 +907,7 @@ export class Chatwoot implements INodeType {
             if (updateFields.avatar_url) body.avatar_url = updateFields.avatar_url;
             if (updateFields.blocked !== undefined) body.blocked = updateFields.blocked;
             if (updateFields.custom_attributes) {
-              body.custom_attributes =
-                typeof updateFields.custom_attributes === 'string'
-                  ? JSON.parse(updateFields.custom_attributes)
-                  : updateFields.custom_attributes;
+              body.custom_attributes = parseJsonSafe(updateFields.custom_attributes, 'custom_attributes');
             }
 
             responseData = await chatwootApiRequest.call(this, 'PUT', `/contacts/${contactId}`, body);
@@ -952,7 +950,7 @@ export class Chatwoot implements INodeType {
             const filterPayload = this.getNodeParameter('filterPayload', i) as string;
             const returnAll = this.getNodeParameter('returnAll', i) as boolean;
 
-            const body: IDataObject = { payload: JSON.parse(filterPayload) };
+            const body: IDataObject = { payload: parseJsonSafe(filterPayload, 'filter payload') };
 
             if (returnAll) {
               responseData = await chatwootApiRequestAllItems.call(this, 'POST', '/contacts/filter', body, {}, 'payload');
@@ -1058,8 +1056,8 @@ export class Chatwoot implements INodeType {
           } else if (operation === 'create') {
             const name = this.getNodeParameter('name', i) as string;
             const eventName = this.getNodeParameter('eventName', i) as string;
-            const conditions = JSON.parse(this.getNodeParameter('conditions', i) as string);
-            const actions = JSON.parse(this.getNodeParameter('actions', i) as string);
+            const conditions = parseJsonSafe(this.getNodeParameter('conditions', i), 'conditions');
+            const actions = parseJsonSafe(this.getNodeParameter('actions', i), 'actions');
             const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
 
             const body: IDataObject = {
@@ -1080,8 +1078,8 @@ export class Chatwoot implements INodeType {
             if (updateFields.name) body.name = updateFields.name;
             if (updateFields.description) body.description = updateFields.description;
             if (updateFields.active !== undefined) body.active = updateFields.active;
-            if (updateFields.conditions) body.conditions = JSON.parse(updateFields.conditions as string);
-            if (updateFields.actions) body.actions = JSON.parse(updateFields.actions as string);
+            if (updateFields.conditions) body.conditions = parseJsonSafe(updateFields.conditions, 'conditions');
+            if (updateFields.actions) body.actions = parseJsonSafe(updateFields.actions, 'actions');
 
             responseData = await chatwootApiRequest.call(this, 'PATCH', `/automation_rules/${automationRuleId}`, body);
           } else if (operation === 'delete') {
@@ -1106,7 +1104,7 @@ export class Chatwoot implements INodeType {
           } else if (operation === 'create') {
             const name = this.getNodeParameter('name', i) as string;
             const filterType = this.getNodeParameter('filterType', i) as string;
-            const query = JSON.parse(this.getNodeParameter('query', i) as string);
+            const query = parseJsonSafe(this.getNodeParameter('query', i), 'query');
 
             const body: IDataObject = {
               name,
@@ -1121,7 +1119,7 @@ export class Chatwoot implements INodeType {
 
             const body: IDataObject = {};
             if (updateFields.name) body.name = updateFields.name;
-            if (updateFields.query) body.query = JSON.parse(updateFields.query as string);
+            if (updateFields.query) body.query = parseJsonSafe(updateFields.query, 'query');
 
             responseData = await chatwootApiRequest.call(this, 'PATCH', `/custom_filters/${customFilterId}`, body);
           } else if (operation === 'delete') {
@@ -1202,6 +1200,9 @@ export class Chatwoot implements INodeType {
             if (updateFields.availability) body.availability = updateFields.availability;
             if (updateFields.auto_offline !== undefined) body.auto_offline = updateFields.auto_offline;
             responseData = await chatwootApiRequest.call(this, 'PUT', '/profile', body);
+          } else if (operation === 'availability') {
+            const availability = this.getNodeParameter('availability', i) as string;
+            responseData = await chatwootApiRequest.call(this, 'POST', '/profile/availability', { availability });
           } else {
             throw new NodeOperationError(this.getNode(), `Operation "${operation}" not supported`, { itemIndex: i });
           }
@@ -1284,13 +1285,13 @@ export class Chatwoot implements INodeType {
           } else if (operation === 'createHook') {
             const appId = this.getNodeParameter('appId', i) as string;
             const inboxId = validateId(this.getNodeParameter('inboxId', i), 'Inbox ID');
-            const settings = JSON.parse(this.getNodeParameter('settings', i) as string);
+            const settings = parseJsonSafe(this.getNodeParameter('settings', i), 'settings');
 
             const body: IDataObject = { app_id: appId, inbox_id: inboxId, settings };
             responseData = await chatwootApiRequest.call(this, 'POST', '/integrations/hooks', body);
           } else if (operation === 'updateHook') {
             const hookId = validateId(this.getNodeParameter('hookId', i), 'Hook ID');
-            const settings = JSON.parse(this.getNodeParameter('settings', i) as string);
+            const settings = parseJsonSafe(this.getNodeParameter('settings', i), 'settings');
 
             const body: IDataObject = { settings };
             responseData = await chatwootApiRequest.call(this, 'PATCH', `/integrations/hooks/${hookId}`, body);
@@ -1335,7 +1336,7 @@ export class Chatwoot implements INodeType {
         else if (resource === 'csatSurvey') {
           if (operation === 'get') {
             const conversationId = validateId(this.getNodeParameter('conversationId', i), 'Conversation ID');
-            responseData = await chatwootApiRequest.call(this, 'GET', `/csat_survey/${conversationId}`);
+            responseData = await chatwootApiRequest.call(this, 'GET', '/csat_survey_responses', {}, { conversation_id: conversationId });
           } else if (operation === 'metrics') {
             const options = this.getNodeParameter('options', i) as IDataObject;
             const qs: IDataObject = {};
@@ -1369,7 +1370,7 @@ export class Chatwoot implements INodeType {
 
             const body: IDataObject = {
               name,
-              actions: typeof actions === 'string' ? JSON.parse(actions) : actions,
+              actions: parseJsonSafe(actions, 'actions'),
             };
             if (additionalFields.visibility) body.visibility = additionalFields.visibility;
 
@@ -1382,9 +1383,7 @@ export class Chatwoot implements INodeType {
             if (updateFields.name) body.name = updateFields.name;
             if (updateFields.visibility) body.visibility = updateFields.visibility;
             if (updateFields.actions) {
-              body.actions = typeof updateFields.actions === 'string'
-                ? JSON.parse(updateFields.actions as string)
-                : updateFields.actions;
+              body.actions = parseJsonSafe(updateFields.actions, 'actions');
             }
 
             responseData = await chatwootApiRequest.call(this, 'PATCH', `/macros/${macroId}`, body);
@@ -1457,6 +1456,12 @@ export class Chatwoot implements INodeType {
           } else if (operation === 'markUnread') {
             const notificationId = validateId(this.getNodeParameter('notificationId', i), 'Notification ID');
             responseData = await chatwootApiRequest.call(this, 'POST', `/notifications/${notificationId}/unread`);
+          } else if (operation === 'snooze') {
+            const notificationId = validateId(this.getNodeParameter('notificationId', i), 'Notification ID');
+            const snoozedUntil = this.getNodeParameter('snoozedUntil', i) as string;
+            responseData = await chatwootApiRequest.call(this, 'POST', `/notifications/${notificationId}/snooze`, {
+              snoozed_until: snoozedUntil,
+            });
           } else {
             throw new NodeOperationError(this.getNode(), `Operation "${operation}" not supported`, { itemIndex: i });
           }
@@ -1480,9 +1485,7 @@ export class Chatwoot implements INodeType {
             if (additionalFields.inbox_id) body.inbox_id = additionalFields.inbox_id;
             if (additionalFields.scheduled_at) body.scheduled_at = additionalFields.scheduled_at;
             if (additionalFields.audience) {
-              body.audience = typeof additionalFields.audience === 'string'
-                ? JSON.parse(additionalFields.audience as string)
-                : additionalFields.audience;
+              body.audience = parseJsonSafe(additionalFields.audience, 'audience');
             }
 
             responseData = await chatwootApiRequest.call(this, 'POST', '/campaigns', body);
@@ -1707,6 +1710,47 @@ export class Chatwoot implements INodeType {
         }
 
         // =====================================================================
+        // APPLIED SLA (Enterprise)
+        // =====================================================================
+        else if (resource === 'appliedSla') {
+          if (operation === 'getAll') {
+            const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+            const options = this.getNodeParameter('options', i) as IDataObject;
+            const qs: IDataObject = {};
+            if (options.since) qs.since = new Date(options.since as string).getTime() / 1000;
+            if (options.until) qs.until = new Date(options.until as string).getTime() / 1000;
+            if (options.inbox_id) qs.inbox_id = options.inbox_id;
+            if (options.team_id) qs.team_id = options.team_id;
+            if (options.sla_policy_id) qs.sla_policy_id = options.sla_policy_id;
+            if (options.assigned_agent_id) qs.assigned_agent_id = options.assigned_agent_id;
+
+            if (returnAll) {
+              responseData = await chatwootApiRequestAllItems.call(this, 'GET', '/applied_slas', {}, qs, 'payload');
+            } else {
+              const limit = this.getNodeParameter('limit', i) as number;
+              qs.page = 1;
+              const result = (await chatwootApiRequest.call(this, 'GET', '/applied_slas', {}, qs)) as IDataObject;
+              const payload = (result.payload || []) as IDataObject[];
+              responseData = payload.slice(0, limit);
+            }
+          } else if (operation === 'metrics') {
+            const options = this.getNodeParameter('options', i) as IDataObject;
+            const qs: IDataObject = {};
+            if (options.since) qs.since = new Date(options.since as string).getTime() / 1000;
+            if (options.until) qs.until = new Date(options.until as string).getTime() / 1000;
+            responseData = await chatwootApiRequest.call(this, 'GET', '/applied_slas/metrics', {}, qs);
+          } else if (operation === 'download') {
+            const options = this.getNodeParameter('options', i) as IDataObject;
+            const qs: IDataObject = {};
+            if (options.since) qs.since = new Date(options.since as string).getTime() / 1000;
+            if (options.until) qs.until = new Date(options.until as string).getTime() / 1000;
+            responseData = await chatwootApiRequest.call(this, 'GET', '/applied_slas/download', {}, qs);
+          } else {
+            throw new NodeOperationError(this.getNode(), `Operation "${operation}" not supported`, { itemIndex: i });
+          }
+        }
+
+        // =====================================================================
         // PLATFORM API: ACCOUNT
         // =====================================================================
         else if (resource === 'platformAccount') {
@@ -1745,7 +1789,7 @@ export class Chatwoot implements INodeType {
             const body: IDataObject = { email, name };
             if (additionalFields.password) body.password = additionalFields.password;
             if (additionalFields.custom_attributes) {
-              body.custom_attributes = JSON.parse(additionalFields.custom_attributes as string);
+              body.custom_attributes = parseJsonSafe(additionalFields.custom_attributes, 'custom_attributes');
             }
             responseData = await chatwootPlatformApiRequest.call(this, 'POST', '/users', body);
           } else if (operation === 'get') {
@@ -1755,8 +1799,8 @@ export class Chatwoot implements INodeType {
             const userId = validateId(this.getNodeParameter('userId', i), 'User ID');
             const updateFields = this.getNodeParameter('updateFields', i) as IDataObject;
 
-            if (updateFields.custom_attributes && typeof updateFields.custom_attributes === 'string') {
-              updateFields.custom_attributes = JSON.parse(updateFields.custom_attributes);
+            if (updateFields.custom_attributes) {
+              updateFields.custom_attributes = parseJsonSafe(updateFields.custom_attributes, 'custom_attributes');
             }
             responseData = await chatwootPlatformApiRequest.call(this, 'PATCH', `/users/${userId}`, updateFields);
           } else if (operation === 'delete') {
@@ -1841,7 +1885,7 @@ export class Chatwoot implements INodeType {
             const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
 
             if (additionalFields.custom_attributes && typeof additionalFields.custom_attributes === 'string') {
-              additionalFields.custom_attributes = JSON.parse(additionalFields.custom_attributes);
+              additionalFields.custom_attributes = parseJsonSafe(additionalFields.custom_attributes, 'custom_attributes');
             }
 
             responseData = await chatwootPublicApiRequest.call(this, 'POST', `/inboxes/${inboxIdentifier}/contacts`, additionalFields);
@@ -1853,7 +1897,7 @@ export class Chatwoot implements INodeType {
             const updateFields = this.getNodeParameter('updateFields', i) as IDataObject;
 
             if (updateFields.custom_attributes && typeof updateFields.custom_attributes === 'string') {
-              updateFields.custom_attributes = JSON.parse(updateFields.custom_attributes);
+              updateFields.custom_attributes = parseJsonSafe(updateFields.custom_attributes, 'custom_attributes');
             }
 
             responseData = await chatwootPublicApiRequest.call(this, 'PATCH', `/inboxes/${inboxIdentifier}/contacts/${contactIdentifier}`, updateFields);
@@ -1874,7 +1918,7 @@ export class Chatwoot implements INodeType {
             const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
 
             if (additionalFields.custom_attributes && typeof additionalFields.custom_attributes === 'string') {
-              additionalFields.custom_attributes = JSON.parse(additionalFields.custom_attributes);
+              additionalFields.custom_attributes = parseJsonSafe(additionalFields.custom_attributes, 'custom_attributes');
             }
 
             responseData = await chatwootPublicApiRequest.call(this, 'POST', `/inboxes/${inboxIdentifier}/contacts/${contactIdentifier}/conversations`, additionalFields);

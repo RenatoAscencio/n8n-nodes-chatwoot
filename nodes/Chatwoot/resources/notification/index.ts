@@ -5,6 +5,7 @@ import { deleteOperation } from './delete.operation';
 import { readAllOperation } from './readAll.operation';
 import { unreadCountOperation } from './unreadCount.operation';
 import { markUnreadOperation } from './markUnread.operation';
+import { snoozeOperation } from './snooze.operation';
 
 export const notificationOperations: INodeProperties = {
   displayName: 'Operation',
@@ -48,6 +49,12 @@ export const notificationOperations: INodeProperties = {
       action: 'Mark notification unread',
     },
     {
+      name: 'Snooze',
+      value: 'snooze',
+      description: 'Snooze a notification until a specified time',
+      action: 'Snooze a notification',
+    },
+    {
       name: 'Unread Count',
       value: 'unreadCount',
       description: 'Get count of unread notifications',
@@ -64,4 +71,5 @@ export const notificationFields: INodeProperties[] = [
   ...readAllOperation,
   ...unreadCountOperation,
   ...markUnreadOperation,
+  ...snoozeOperation,
 ];

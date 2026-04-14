@@ -11,6 +11,7 @@ import { contactOperations, contactFields } from '../nodes/Chatwoot/resources/co
 import { helpCenterOperations, helpCenterFields } from '../nodes/Chatwoot/resources/helpCenter';
 import { csatSurveyOperations, csatSurveyFields } from '../nodes/Chatwoot/resources/csatSurvey';
 import { profileOperations, profileFields } from '../nodes/Chatwoot/resources/profile';
+import { appliedSlaOperations, appliedSlaFields } from '../nodes/Chatwoot/resources/appliedSla';
 import type { INodeProperties } from 'n8n-workflow';
 
 const allResources: Array<{
@@ -31,6 +32,7 @@ const allResources: Array<{
   { name: 'helpCenter', operations: helpCenterOperations, fields: helpCenterFields },
   { name: 'csatSurvey', operations: csatSurveyOperations, fields: csatSurveyFields },
   { name: 'profile', operations: profileOperations, fields: profileFields },
+  { name: 'appliedSla', operations: appliedSlaOperations, fields: appliedSlaFields },
 ];
 
 describe('Resource Definitions', () => {
@@ -100,8 +102,8 @@ describe('Resource Operation Counts', () => {
     expect((macroOperations.options as unknown[]).length).toBe(6);
   });
 
-  it('notification should have 6 operations', () => {
-    expect((notificationOperations.options as unknown[]).length).toBe(6);
+  it('notification should have 7 operations', () => {
+    expect((notificationOperations.options as unknown[]).length).toBe(7);
   });
 
   it('campaign should have 5 operations', () => {
@@ -144,7 +146,11 @@ describe('Resource Operation Counts', () => {
     expect((csatSurveyOperations.options as unknown[]).length).toBe(3);
   });
 
-  it('profile should have 2 operations', () => {
-    expect((profileOperations.options as unknown[]).length).toBe(2);
+  it('profile should have 3 operations', () => {
+    expect((profileOperations.options as unknown[]).length).toBe(3);
+  });
+
+  it('appliedSla should have 3 operations', () => {
+    expect((appliedSlaOperations.options as unknown[]).length).toBe(3);
   });
 });

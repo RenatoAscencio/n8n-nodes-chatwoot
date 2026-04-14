@@ -1,4 +1,4 @@
-import { validateId, simplifyResponse, validateString, normalizeBaseUrl } from '../nodes/Chatwoot/GenericFunctions';
+import { validateId, simplifyResponse, validateString, normalizeBaseUrl, parseJsonSafe } from '../nodes/Chatwoot/GenericFunctions';
 import type { IDataObject } from 'n8n-workflow';
 
 describe('GenericFunctions', () => {
@@ -229,6 +229,35 @@ describe('GenericFunctions', () => {
       expect(result).toHaveLength(1000);
       expect(result[0]).toEqual({ id: 0, name: 'Item 0' });
       expect(result[999]).toEqual({ id: 999, name: 'Item 999' });
+    });
+  });
+
+  // =========================================================================
+  // parseJsonSafe
+  // =========================================================================
+  describe('parseJsonSafe', () => {
+    it('should parse valid JSON string', () => {
+      expect(parseJsonSafe('{"key":"value"}', 'test')).toEqual({ key: 'value' });
+    });
+
+    it('should parse valid JSON array', () => {
+      expect(parseJsonSafe('[1,2,3]', 'test')).toEqual([1, 2, 3]);
+    });
+
+    it('should return non-string values as-is', () => {
+      const obj = { key: 'value' };
+      expect(parseJsonSafe(obj, 'test')).toBe(obj);
+      expect(parseJsonSafe(42, 'test')).toBe(42);
+      expect(parseJsonSafe(null, 'test')).toBe(null);
+      expect(parseJsonSafe(undefined, 'test')).toBe(undefined);
+    });
+
+    it('should throw descriptive error for invalid JSON', () => {
+      expect(() => parseJsonSafe('{invalid}', 'custom_attributes')).toThrow('Invalid JSON in "custom_attributes"');
+    });
+
+    it('should include truncated value in error message', () => {
+      expect(() => parseJsonSafe('not json', 'field')).toThrow('not json');
     });
   });
 
