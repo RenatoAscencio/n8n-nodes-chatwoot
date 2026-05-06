@@ -6,7 +6,7 @@
 [![n8n community node](https://img.shields.io/badge/n8n-community%20node-orange)](https://docs.n8n.io/integrations/community-nodes/)
 
 <p align="center">
-  <img src="https://www.chatwoot.com/images/logo/logo.svg" alt="Chatwoot Logo" width="200">
+  <img src="https://raw.githubusercontent.com/RenatoAscencio/n8n-nodes-chatwoot/main/nodes/Chatwoot/chatwoot.svg" alt="Chatwoot Logo" width="120">
 </p>
 
 A comprehensive n8n community node for [Chatwoot](https://www.chatwoot.com/) - the open-source customer engagement platform. Automate your customer support workflows with full access to conversations, messages, contacts, agents, teams, and more.
@@ -17,10 +17,12 @@ A comprehensive n8n community node for [Chatwoot](https://www.chatwoot.com/) - t
 
 ## Highlights
 
-- **35 Resources** - Comprehensive coverage of Application, Platform, and Public APIs
-- **195+ Operations** - Complete CRUD operations for all resources
-- **3 API Types** - Application API, Platform API, and Public API support
+- **38 Resources** - Comprehensive coverage of Application, Platform, and Public APIs
+- **220+ Operations** - Complete CRUD operations for all resources
+- **3 API Types** - Application API (v1 + v2), Platform API, and Public API support
 - **Trigger Node** - Real-time webhook events (10 event types) from Chatwoot
+- **Reports v2** - Full coverage of `/api/v2/reports`, `/live_reports`, `/summary_reports`
+- **WhatsApp Templates** - Native `template_params` support for template messages
 - **Dynamic Dropdowns** - Auto-populated lists for agents, teams, inboxes, and labels
 - **Smart Pagination** - Automatic handling with "Return All" option
 - **Reports & Analytics** - Access conversation and agent statistics
@@ -132,8 +134,8 @@ Used for client-side/widget operations - creating contacts and conversations fro
 
 ### Chatwoot Node
 
-The main node for interacting with Chatwoot APIs. Supports 35 resources across three API types:
-- **Application API** (28 resources) - Core operations for conversations, contacts, messages, macros, notifications, campaigns, companies, SLA policies, global search, etc.
+The main node for interacting with Chatwoot APIs. Supports 38 resources across three API types:
+- **Application API** (31 resources) - Core operations for conversations, contacts, messages, macros, notifications, campaigns, companies, SLA policies, applied SLAs, global search, reports v2, live reports, summary reports, etc.
 - **Platform API** (4 resources) - Admin operations for accounts, users, and agent bots
 - **Public API** (3 resources) - Client-side operations for widgets and external integrations
 
@@ -279,10 +281,12 @@ Send and retrieve messages in conversations.
 
 | Operation | Description |
 |-----------|-------------|
-| **Create** | Send a message (supports private notes) |
+| **Create** | Send a message (supports private notes, WhatsApp template params, content_attributes) |
 | **Get Many** | Retrieve message history with cursor-based pagination |
 | **Update** | Update an existing message |
 | **Delete** | Delete a message |
+
+> **WhatsApp template messages** (since v0.8.1): use the `template_params` JSON option with format `{"name": "template_name", "category": "MARKETING|UTILITY|AUTHENTICATION", "language": "en_US", "processed_params": {"1": "value1", "2": "value2"}}`.
 
 ### Team
 
@@ -349,14 +353,57 @@ Manage saved filters for conversations and contacts.
 
 ### Report
 
-Access analytics and reporting data.
+Access analytics and reporting data via Chatwoot's `/api/v2/reports` endpoints. **Now correctly routed through v2** (was broken in v0.3.0–v0.7.x — see [v0.8.0 release notes](https://github.com/RenatoAscencio/n8n-nodes-chatwoot/releases/tag/v0.8.0)).
 
 | Operation | Description |
 |-----------|-------------|
-| **Account Summary** | Get account-level report summary |
-| **Agent Statistics** | Get agent conversation metrics |
-| **Conversation Counts** | Get conversation counts by status |
-| **Conversation Statistics** | Get statistics grouped by agent, inbox, team, or channel |
+| **Account Summary** | Period comparison summary (current vs previous) |
+| **Timeseries** | Timeseries data for a metric |
+| **Bot Summary** | Bot-specific summary metrics |
+| **Bot Metrics** | Bot performance metrics |
+| **Agent Statistics** | Per-agent summary (CSV) |
+| **Inbox Statistics** | Per-inbox summary (CSV) |
+| **Label Statistics** | Per-label summary (CSV) |
+| **Team Statistics** | Per-team summary (CSV) |
+| **Conversation Statistics** | Conversation metrics by type |
+| **Conversations Summary** | Conversation summary (CSV) |
+| **Conversation Traffic** | Hourly heatmap (CSV) |
+| **Inbox Label Matrix** | Cross-tabulation of inboxes vs labels |
+| **First Response Time Distribution** | Distribution of first response times |
+| **Outgoing Messages Count** | Outgoing counts grouped by entity |
+| **Year in Review** | Annual review statistics |
+| **Conversation Counts** | Conversation counts by status (uses v1 `/conversations/meta`) |
+
+### Live Report
+
+Real-time conversation metrics (no date range needed).
+
+| Operation | Description |
+|-----------|-------------|
+| **Conversation Metrics** | Real-time counts (open, unattended, unassigned, pending) |
+| **Grouped Conversation Metrics** | Real-time counts grouped by team or agent |
+
+### Summary Report
+
+Per-entity summary metrics with date range (JSON, max 6-month range for channel).
+
+| Operation | Description |
+|-----------|-------------|
+| **Agent Summary** | Per-agent summary metrics |
+| **Team Summary** | Per-team summary metrics |
+| **Inbox Summary** | Per-inbox summary metrics |
+| **Label Summary** | Per-label summary metrics |
+| **Channel Summary** | Per-channel summary metrics |
+
+### Applied SLA (Enterprise)
+
+Track SLA compliance per conversation.
+
+| Operation | Description |
+|-----------|-------------|
+| **Get Many** | List applied SLAs (paginated) |
+| **Metrics** | SLA hit rate metrics |
+| **Download** | Export breached conversations as CSV |
 
 ### Profile
 

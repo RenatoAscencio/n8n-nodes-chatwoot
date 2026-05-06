@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.2] - 2026-05-06
+
+### Documentation
+
+- **README**: Fixed broken Chatwoot logo link (Chatwoot's CDN returned 404). Now uses the local SVG via GitHub raw URL.
+- **README**: Updated stats to reflect v0.8.x (38 resources, 220+ operations)
+- **README**: Added documentation for new resources: Reports v2 (16 ops), Live Reports, Summary Reports, Applied SLAs
+- **README**: Added WhatsApp `template_params` usage notes for `message.create`
+
+---
+
 ## [0.8.1] - 2026-05-06
 
 ### Added
