@@ -5,6 +5,56 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.0] - 2026-05-06
+
+### Fixed
+
+- **CRITICAL: Reports API was completely broken** — All report endpoints (`/reports/summary`, `/reports/agents`, `/reports/conversations`, etc.) were being called under `/api/v1/` but Chatwoot only exposes them under `/api/v2/`. Every report call was returning 404 since v0.3.0. Fixed by adding new `chatwootApiV2Request()` helper and routing all reports through v2.
+
+### Added
+
+#### New v2 API Helper
+
+- **`chatwootApiV2Request()`** in GenericFunctions — calls `/api/v2/accounts/{id}/...` for Reports endpoints
+
+#### Report Resource (Expanded)
+
+Existing 4 ops now use v2, plus 12 new ops added (16 total):
+
+- Account Summary, Timeseries, Bot Summary, Bot Metrics, Agent Statistics, Inbox Statistics, Label Statistics, Team Statistics, Conversation Statistics, Conversations Summary, Conversation Traffic, Inbox Label Matrix, First Response Time Distribution, Outgoing Messages Count, Year in Review, Conversation Counts (kept on v1)
+
+#### Live Report Resource — NEW
+
+Real-time conversation metrics:
+
+- Conversation Metrics: Get real-time counts (open, unattended, unassigned, pending)
+- Grouped Conversation Metrics: Group counts by team or agent
+
+#### Summary Report Resource — NEW
+
+Per-entity summary metrics with date range:
+
+- Agent / Team / Inbox / Label / Channel summaries
+
+### Technical
+
+- 38 total resources with 220+ operations
+- 241 unit tests
+- All Reports endpoints now use correct `/api/v2/` base path
+
+---
+
+## [0.7.1 - 0.7.4] - 2026-04-14
+
+Consolidated patch fixes:
+
+- **0.7.4**: contact.create — `inboxId` is now optional (moved to additionalFields)
+- **0.7.3**: notification pagination — page-size detection (15/page) instead of incorrect `meta.count` check; toggleTyping — removed undocumented `is_private` field
+- **0.7.2**: trigger checkExists — single API call, deletes stale webhook on URL change, propagates auth/network errors; types — added `conversation_typing_on`/`off` to `WebhookSubscription` and `TriggerEventType`
+- **0.7.1**: pagination — dynamic page size detection; clone qs to avoid mutation; cursor pagination guard against falsy/unchanged message.id; Array.isArray guards on getAgents/getAgentBots
+
+---
+
 ## [0.7.0] - 2026-04-14
 
 ### Fixed

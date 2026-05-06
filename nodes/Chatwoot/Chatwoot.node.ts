@@ -9,6 +9,7 @@ import { NodeOperationError } from 'n8n-workflow';
 
 import {
   chatwootApiRequest,
+  chatwootApiV2Request,
   chatwootApiRequestAllItems,
   chatwootApiRequestAllMessages,
   chatwootPlatformApiRequest,
@@ -55,6 +56,8 @@ import { companyOperations, companyFields } from './resources/company';
 import { searchOperations as globalSearchOperations, searchFields as globalSearchFields } from './resources/search';
 import { slaPolicyOperations, slaPolicyFields } from './resources/slaPolicy';
 import { appliedSlaOperations, appliedSlaFields } from './resources/appliedSla';
+import { liveReportOperations, liveReportFields } from './resources/liveReport';
+import { summaryReportOperations, summaryReportFields } from './resources/summaryReport';
 
 // Platform API Resource imports
 import { platformAccountOperations, platformAccountFields } from './resources/platformAccount';
@@ -117,6 +120,8 @@ export class Chatwoot implements INodeType {
               'search',
               'slaPolicy',
               'appliedSla',
+              'liveReport',
+              'summaryReport',
             ],
           },
         },
@@ -168,6 +173,7 @@ export class Chatwoot implements INodeType {
           { name: 'Inbox', value: 'inbox' },
           { name: 'Integration', value: 'integration' },
           { name: 'Label', value: 'label' },
+          { name: 'Live Report', value: 'liveReport' },
           { name: 'Macro', value: 'macro' },
           { name: 'Message', value: 'message' },
           { name: 'Notification', value: 'notification' },
@@ -175,6 +181,7 @@ export class Chatwoot implements INodeType {
           { name: 'Report', value: 'report' },
           { name: 'Search', value: 'search' },
           { name: 'SLA Policy (Enterprise)', value: 'slaPolicy' },
+          { name: 'Summary Report', value: 'summaryReport' },
           { name: 'Team', value: 'team' },
           { name: 'Webhook', value: 'webhook' },
           // Platform API Resources
@@ -219,6 +226,8 @@ export class Chatwoot implements INodeType {
       globalSearchOperations,
       slaPolicyOperations,
       appliedSlaOperations,
+      liveReportOperations,
+      summaryReportOperations,
       // Platform API Operations
       platformAccountOperations,
       platformUserOperations,
@@ -258,6 +267,8 @@ export class Chatwoot implements INodeType {
       ...globalSearchFields,
       ...slaPolicyFields,
       ...appliedSlaFields,
+      ...liveReportFields,
+      ...summaryReportFields,
       // Platform API Fields
       ...platformAccountFields,
       ...platformUserFields,
@@ -1130,55 +1141,71 @@ export class Chatwoot implements INodeType {
         }
 
         // =====================================================================
-        // REPORT
+        // REPORT (Application API v2 — /api/v2/accounts/{id}/reports/...)
         // =====================================================================
         else if (resource === 'report') {
-          const qs: IDataObject = {};
+          // Helper: convert dateTime to unix timestamp
+          const toUnix = (val: string): number => Math.floor(new Date(val).getTime() / 1000);
+
+          // Helper: build qs from since/until + options collection
+          const buildQs = (extra: IDataObject = {}): IDataObject => {
+            const qs: IDataObject = { ...extra };
+            const sinceVal = this.getNodeParameter('since', i, '') as string;
+            const untilVal = this.getNodeParameter('until', i, '') as string;
+            if (sinceVal) qs.since = toUnix(sinceVal);
+            if (untilVal) qs.until = toUnix(untilVal);
+            const opts = this.getNodeParameter('options', i, {}) as IDataObject;
+            if (opts.id) qs.id = opts.id;
+            if (opts.group_by) qs.group_by = opts.group_by;
+            if (opts.timezone_offset !== undefined) qs.timezone_offset = opts.timezone_offset;
+            if (opts.business_hours !== undefined) qs.business_hours = opts.business_hours;
+            if (opts.days_before) qs.days_before = opts.days_before;
+            if (opts.user_id) qs.user_id = opts.user_id;
+            if (opts.inbox_ids) qs['inbox_ids[]'] = (opts.inbox_ids as string).split(',').map((v) => parseInt(v.trim(), 10));
+            if (opts.label_ids) qs['label_ids[]'] = (opts.label_ids as string).split(',').map((v) => parseInt(v.trim(), 10));
+            return qs;
+          };
 
           if (operation === 'accountSummary') {
-            const since = new Date(this.getNodeParameter('since', i) as string).getTime() / 1000;
-            const until = new Date(this.getNodeParameter('until', i) as string).getTime() / 1000;
+            const type = this.getNodeParameter('type', i) as string;
+            responseData = await chatwootApiV2Request.call(this, 'GET', '/reports/summary', {}, buildQs({ type }));
+          } else if (operation === 'timeseries') {
+            const type = this.getNodeParameter('type', i) as string;
             const metric = this.getNodeParameter('metric', i) as string;
-            const options = this.getNodeParameter('options', i) as IDataObject;
-
-            qs.since = since;
-            qs.until = until;
-            qs.metric = metric;
-            if (options.type) qs.type = options.type;
-            if (options.id) qs.id = options.id;
-            if (options.timezone_offset) qs.timezone_offset = options.timezone_offset;
-
-            responseData = await chatwootApiRequest.call(this, 'GET', '/reports/summary', {}, qs);
+            responseData = await chatwootApiV2Request.call(this, 'GET', '/reports', {}, buildQs({ type, metric }));
+          } else if (operation === 'botSummary') {
+            const type = this.getNodeParameter('type', i) as string;
+            responseData = await chatwootApiV2Request.call(this, 'GET', '/reports/bot_summary', {}, buildQs({ type }));
+          } else if (operation === 'botMetrics') {
+            responseData = await chatwootApiV2Request.call(this, 'GET', '/reports/bot_metrics', {}, buildQs());
           } else if (operation === 'agentStatistics') {
-            const since = new Date(this.getNodeParameter('since', i) as string).getTime() / 1000;
-            const until = new Date(this.getNodeParameter('until', i) as string).getTime() / 1000;
-            const options = this.getNodeParameter('options', i) as IDataObject;
-
-            qs.since = since;
-            qs.until = until;
-            if (options.timezone_offset) qs.timezone_offset = options.timezone_offset;
-
-            responseData = await chatwootApiRequest.call(this, 'GET', '/reports/agents', {}, qs);
-          } else if (operation === 'conversationCounts') {
-            responseData = await chatwootApiRequest.call(this, 'GET', '/conversations/meta');
+            responseData = await chatwootApiV2Request.call(this, 'GET', '/reports/agents', {}, buildQs());
+          } else if (operation === 'inboxStatistics') {
+            responseData = await chatwootApiV2Request.call(this, 'GET', '/reports/inboxes', {}, buildQs());
+          } else if (operation === 'labelStatistics') {
+            responseData = await chatwootApiV2Request.call(this, 'GET', '/reports/labels', {}, buildQs());
+          } else if (operation === 'teamStatistics') {
+            responseData = await chatwootApiV2Request.call(this, 'GET', '/reports/teams', {}, buildQs());
           } else if (operation === 'conversationStatistics') {
-            const since = new Date(this.getNodeParameter('since', i) as string).getTime() / 1000;
-            const until = new Date(this.getNodeParameter('until', i) as string).getTime() / 1000;
+            const conversationType = this.getNodeParameter('conversationType', i) as string;
+            responseData = await chatwootApiV2Request.call(this, 'GET', '/reports/conversations', {}, buildQs({ type: conversationType }));
+          } else if (operation === 'conversationsSummary') {
+            responseData = await chatwootApiV2Request.call(this, 'GET', '/reports/conversations_summary', {}, buildQs());
+          } else if (operation === 'conversationTraffic') {
+            responseData = await chatwootApiV2Request.call(this, 'GET', '/reports/conversation_traffic', {}, buildQs());
+          } else if (operation === 'inboxLabelMatrix') {
+            responseData = await chatwootApiV2Request.call(this, 'GET', '/reports/inbox_label_matrix', {}, buildQs());
+          } else if (operation === 'firstResponseTimeDistribution') {
+            responseData = await chatwootApiV2Request.call(this, 'GET', '/reports/first_response_time_distribution', {}, buildQs());
+          } else if (operation === 'outgoingMessagesCount') {
             const groupBy = this.getNodeParameter('groupBy', i) as string;
-            const options = this.getNodeParameter('options', i) as IDataObject;
-
-            qs.since = since;
-            qs.until = until;
-            if (options.timezone_offset) qs.timezone_offset = options.timezone_offset;
-
-            let endpoint = '/reports';
-            if (groupBy === 'agent') endpoint = '/reports/conversations';
-            else if (groupBy === 'inbox') endpoint = '/reports/inboxes';
-            else if (groupBy === 'team') endpoint = '/reports/teams';
-            else if (groupBy === 'channel_type') endpoint = '/reports/conversations';
-
-            qs.type = groupBy;
-            responseData = await chatwootApiRequest.call(this, 'GET', endpoint, {}, qs);
+            responseData = await chatwootApiV2Request.call(this, 'GET', '/reports/outgoing_messages_count', {}, buildQs({ group_by: groupBy }));
+          } else if (operation === 'yearInReview') {
+            const year = this.getNodeParameter('year', i) as number;
+            responseData = await chatwootApiV2Request.call(this, 'GET', '/year_in_review', {}, { year });
+          } else if (operation === 'conversationCounts') {
+            // Note: this stays on v1 because /conversations/meta is a v1 endpoint
+            responseData = await chatwootApiRequest.call(this, 'GET', '/conversations/meta');
           } else {
             throw new NodeOperationError(this.getNode(), `Operation "${operation}" not supported`, { itemIndex: i });
           }
@@ -1742,6 +1769,44 @@ export class Chatwoot implements INodeType {
             if (options.since) qs.since = new Date(options.since as string).getTime() / 1000;
             if (options.until) qs.until = new Date(options.until as string).getTime() / 1000;
             responseData = await chatwootApiRequest.call(this, 'GET', '/applied_slas/download', {}, qs);
+          } else {
+            throw new NodeOperationError(this.getNode(), `Operation "${operation}" not supported`, { itemIndex: i });
+          }
+        }
+
+        // =====================================================================
+        // LIVE REPORT (v2 — real-time conversation metrics)
+        // =====================================================================
+        else if (resource === 'liveReport') {
+          if (operation === 'conversationMetrics') {
+            const options = this.getNodeParameter('options', i, {}) as IDataObject;
+            const qs: IDataObject = {};
+            if (options.team_id) qs.team_id = options.team_id;
+            responseData = await chatwootApiV2Request.call(this, 'GET', '/live_reports/conversation_metrics', {}, qs);
+          } else if (operation === 'groupedConversationMetrics') {
+            const groupBy = this.getNodeParameter('groupBy', i) as string;
+            const options = this.getNodeParameter('options', i, {}) as IDataObject;
+            const qs: IDataObject = { group_by: groupBy };
+            if (options.team_id) qs.team_id = options.team_id;
+            responseData = await chatwootApiV2Request.call(this, 'GET', '/live_reports/grouped_conversation_metrics', {}, qs);
+          } else {
+            throw new NodeOperationError(this.getNode(), `Operation "${operation}" not supported`, { itemIndex: i });
+          }
+        }
+
+        // =====================================================================
+        // SUMMARY REPORT (v2 — per-entity summary metrics)
+        // =====================================================================
+        else if (resource === 'summaryReport') {
+          const since = Math.floor(new Date(this.getNodeParameter('since', i) as string).getTime() / 1000);
+          const until = Math.floor(new Date(this.getNodeParameter('until', i) as string).getTime() / 1000);
+          const options = this.getNodeParameter('options', i, {}) as IDataObject;
+          const qs: IDataObject = { since, until };
+          if (options.business_hours !== undefined) qs.business_hours = options.business_hours;
+
+          // Operation maps directly to endpoint segment: agent, team, inbox, label, channel
+          if (['agent', 'team', 'inbox', 'label', 'channel'].includes(operation)) {
+            responseData = await chatwootApiV2Request.call(this, 'GET', `/summary_reports/${operation}`, {}, qs);
           } else {
             throw new NodeOperationError(this.getNode(), `Operation "${operation}" not supported`, { itemIndex: i });
           }

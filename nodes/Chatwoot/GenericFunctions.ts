@@ -157,6 +157,58 @@ export async function chatwootApiRequest(
 }
 
 // ============================================================================
+// Application API V2 (Reports — only available at /api/v2/)
+// ============================================================================
+
+/**
+ * Make an authenticated request to the Chatwoot Application API v2.
+ * Used for Reports endpoints (reports, summary_reports, live_reports) which
+ * are only available under /api/v2/ — calling them under /api/v1/ returns 404.
+ */
+export async function chatwootApiV2Request(
+  this: IExecuteFunctions | ILoadOptionsFunctions | IHookFunctions,
+  method: IHttpRequestMethods,
+  endpoint: string,
+  body: IDataObject = {},
+  qs: IDataObject = {},
+): Promise<IDataObject | IDataObject[]> {
+  const credentials = await this.getCredentials('chatwootApi');
+
+  let baseUrl: string;
+  try {
+    baseUrl = normalizeBaseUrl(credentials.baseUrl as string);
+  } catch (e) {
+    throw new NodeOperationError(this.getNode(), (e as Error).message);
+  }
+
+  const accountId = credentials.accountId as number;
+  const url = `${baseUrl}/api/v2/accounts/${accountId}${endpoint}`;
+  const headers: IDataObject = {
+    api_access_token: credentials.apiAccessToken as string,
+    'Content-Type': 'application/json',
+  };
+
+  const reqBody = (method !== 'GET' && method !== 'DELETE' && Object.keys(body).length > 0) ? body : undefined;
+  const reqQs = Object.keys(qs).length > 0 ? qs : undefined;
+
+  try {
+    return await performRequest(this, method, url, headers, reqBody, reqQs);
+  } catch (error) {
+    const statusCode = (error as JsonObject).statusCode as number;
+    const message = getErrorMessage(
+      statusCode,
+      (error as Error).message || 'An unexpected error occurred',
+    );
+
+    throw new NodeApiError(this.getNode(), error as JsonObject, {
+      message,
+      description: `Failed to ${method} ${endpoint}`,
+      httpCode: statusCode?.toString(),
+    });
+  }
+}
+
+// ============================================================================
 // Platform API (Super Admin operations)
 // ============================================================================
 
