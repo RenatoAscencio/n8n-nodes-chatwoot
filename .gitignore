@@ -12,6 +12,10 @@ wallaby.js
 *.swo
 *~
 
+# Internal documentation (not for public repo)
+CLAUDE.md
+docs/
+
 # OS
 .DS_Store
 Thumbs.db
