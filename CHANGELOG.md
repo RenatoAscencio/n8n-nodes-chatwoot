@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.1] - 2026-05-06
+
+### Added
+
+- **WhatsApp Template Messages**: New `template_params` JSON option in `message.create` for sending WhatsApp template messages. Supports the standard Chatwoot format: `{"name": "template_name", "category": "MARKETING|UTILITY|AUTHENTICATION", "language": "en_US", "processed_params": {"1": "value1", "2": "value2"}}`. Resolves [#1](https://github.com/RenatoAscencio/n8n-nodes-chatwoot/issues/1).
+
+---
+
 ## [0.8.0] - 2026-05-06
 
 ### Fixed

@@ -117,6 +117,14 @@ export const createOperation: INodeProperties[] = [
         default: '{}',
         description: 'JSON object with custom content attributes (e.g. {"source": "n8n_bot"} for anti-loop detection)',
       },
+      {
+        displayName: 'Template Params (WhatsApp)',
+        name: 'template_params',
+        type: 'json',
+        default: '{}',
+        description:
+          'WhatsApp template message parameters. Format: {"name": "template_name", "category": "MARKETING", "language": "en_US", "processed_params": {"1": "value1", "2": "value2"}}',
+      },
     ],
   },
 ];

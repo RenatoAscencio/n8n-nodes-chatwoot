@@ -837,6 +837,13 @@ export class Chatwoot implements INodeType {
                 body.content_attributes = options.content_attributes;
               }
             }
+            if (options.template_params) {
+              const tp = parseJsonSafe(options.template_params, 'template_params');
+              // Only include if it's a non-empty object
+              if (tp && typeof tp === 'object' && Object.keys(tp).length > 0) {
+                body.template_params = tp;
+              }
+            }
 
             responseData = await chatwootApiRequest.call(this, 'POST', `/conversations/${conversationId}/messages`, body);
           } else if (operation === 'getAll') {
