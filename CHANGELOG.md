@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.3] - 2026-05-06
+
+### Fixed
+
+- **CRITICAL: `conversation.updateCustomAttributes`** silently no-op'd. The fix in v0.4.3 (POST→PATCH) routed through `PATCH /conversations/:id`, but Chatwoot's `permitted_update_params` only permits `:priority` — `custom_attributes` was accepted with 200 OK and silently discarded. Now uses the dedicated `POST /conversations/:id/custom_attributes` endpoint with `attribute_key: null` to set all keys at once. Verified against Chatwoot's `ConversationsController#custom_attributes`.
+
+- **`helpCenter.createPortal` / `updatePortal` / `createCategory` / `createArticle`** were sending unwrapped bodies. Chatwoot's controllers use `params.require(:portal | :category | :article)` so:
+  - `createPortal` returned 500 (ParameterMissing)
+  - `updatePortal` silently no-op'd (`if params[:portal].present?` guard)
+  - `createCategory` / `createArticle` likewise failed with 500
+  - Now bodies are properly wrapped: `{ portal: {...} }`, `{ category: {...} }`, `{ article: {...} }`. Verified against Chatwoot's `*Controller#*_params` private methods.
+
+---
+
 ## [0.8.2] - 2026-05-06
 
 ### Documentation

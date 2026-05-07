@@ -759,11 +759,16 @@ export class Chatwoot implements INodeType {
             const conversationId = validateId(this.getNodeParameter('conversationId', i), 'Conversation ID');
             const customAttributes = this.getNodeParameter('customAttributes', i) as string;
 
+            // Chatwoot's PATCH /conversations/:id only permits `:priority` (see
+            // ConversationsController#permitted_update_params). Custom attributes
+            // must use the dedicated POST /conversations/:id/custom_attributes
+            // endpoint with `attribute_key: null` to set all keys at once.
             const body: IDataObject = {
               custom_attributes: parseJsonSafe(customAttributes, 'custom_attributes'),
+              attribute_key: null,
             };
 
-            responseData = await chatwootApiRequest.call(this, 'PATCH', `/conversations/${conversationId}`, body);
+            responseData = await chatwootApiRequest.call(this, 'POST', `/conversations/${conversationId}/custom_attributes`, body);
           } else if (operation === 'listLabels') {
             const conversationId = validateId(this.getNodeParameter('conversationId', i), 'Conversation ID');
             responseData = await chatwootApiRequest.call(this, 'GET', `/conversations/${conversationId}/labels`);
@@ -1244,12 +1249,16 @@ export class Chatwoot implements INodeType {
         // HELP CENTER
         // =====================================================================
         else if (resource === 'helpCenter') {
+          // Chatwoot's PortalsController/CategoriesController/ArticlesController
+          // use `params.require(:portal|:category|:article)` so create/update
+          // bodies must wrap fields under the resource key. Without the wrapper
+          // create returns 500 and update silently no-ops.
           if (operation === 'createPortal') {
             const name = this.getNodeParameter('name', i) as string;
             const slug = this.getNodeParameter('slug', i) as string;
             const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
 
-            const body: IDataObject = { name, slug, ...additionalFields };
+            const body: IDataObject = { portal: { name, slug, ...additionalFields } };
             responseData = await chatwootApiRequest.call(this, 'POST', '/portals', body);
           } else if (operation === 'getPortal') {
             const portalSlug = this.getNodeParameter('portalSlug', i) as string;
@@ -1258,7 +1267,8 @@ export class Chatwoot implements INodeType {
             const portalSlug = this.getNodeParameter('portalSlug', i) as string;
             const updateFields = this.getNodeParameter('updateFields', i) as IDataObject;
 
-            responseData = await chatwootApiRequest.call(this, 'PATCH', `/portals/${portalSlug}`, updateFields);
+            const body: IDataObject = { portal: updateFields };
+            responseData = await chatwootApiRequest.call(this, 'PATCH', `/portals/${portalSlug}`, body);
           } else if (operation === 'createCategory') {
             const portalSlug = this.getNodeParameter('portalSlug', i) as string;
             const name = this.getNodeParameter('name', i) as string;
@@ -1266,7 +1276,7 @@ export class Chatwoot implements INodeType {
             const locale = this.getNodeParameter('locale', i) as string;
             const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
 
-            const body: IDataObject = { name, slug, locale, ...additionalFields };
+            const body: IDataObject = { category: { name, slug, locale, ...additionalFields } };
             responseData = await chatwootApiRequest.call(this, 'POST', `/portals/${portalSlug}/categories`, body);
           } else if (operation === 'createArticle') {
             const portalSlug = this.getNodeParameter('portalSlug', i) as string;
@@ -1274,7 +1284,7 @@ export class Chatwoot implements INodeType {
             const content = this.getNodeParameter('content', i) as string;
             const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
 
-            const body: IDataObject = { title, content, ...additionalFields };
+            const body: IDataObject = { article: { title, content, ...additionalFields } };
             responseData = await chatwootApiRequest.call(this, 'POST', `/portals/${portalSlug}/articles`, body);
           } else if (operation === 'listPortals') {
             responseData = await chatwootApiRequest.call(this, 'GET', '/portals');
